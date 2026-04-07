@@ -442,6 +442,13 @@ textarea.input { resize: vertical; min-height: 100px; line-height: 1.6; }
   .tool-card { padding: 16px 12px; }
   .tool-card__icon { font-size: 24px; margin-bottom: 8px; }
   .fab { bottom: 16px; right: 16px; padding: 14px 20px; }
+  /* Prevent browser zoom-on-focus on mobile */
+  .input, input, textarea, select { font-size: 16px !important; }
+  /* Tighter sheet body so buttons stay reachable with keyboard open */
+  .sheet__body { padding: 0 16px 24px; }
+  .ritual-modal__body { padding: 16px; }
+  /* Tool content scroll area on mobile */
+  #tool-content { padding-bottom: 80px; }
 }
 @media (min-width: 640px) and (max-width: 1023px) { :root { --max-w: 720px; } }
 @media (min-width: 1024px) { :root { --max-w: 800px; } html { font-size: 15px; } }
@@ -509,24 +516,6 @@ textarea.input { resize: vertical; min-height: 100px; line-height: 1.6; }
   50% { box-shadow: 0 0 0 8px rgba(20,184,166,0.4); }
 }
 
-/* ── Energy Gauge ────────────────────────────────────────────────────────── */
-.energy-gauge { margin-bottom: 24px; }
-.energy-gauge__label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-tertiary); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
-.energy-gauge__label-val { color: var(--text-primary); font-size: 12px; }
-.energy-gauge__track { display: flex; gap: 6px; }
-.energy-gauge__pip {
-  flex: 1; height: 10px; border: var(--pp-border); background: var(--surface-2);
-  cursor: pointer; transition: background 0.1s, transform 0.1s;
-}
-.energy-gauge__pip:hover { transform: scaleY(1.3); }
-.energy-gauge__pip--filled { background: var(--mode-accent); }
-.energy-gauge__pip--1 { background: var(--danger); border-color: var(--danger); }
-.energy-gauge__pip--2 { background: var(--warning); border-color: var(--warning); }
-.energy-gauge__pip--3 { background: var(--warning); border-color: var(--warning); }
-.energy-gauge__pip--4 { background: var(--success); border-color: var(--success); }
-.energy-gauge__pip--5 { background: var(--mode-accent); border-color: var(--mode-accent); }
-.energy-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-top: 5px; }
-
 /* ── Routine Cards ───────────────────────────────────────────────────────── */
 .routine-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
 .routine-card {
@@ -574,9 +563,6 @@ textarea.input { resize: vertical; min-height: 100px; line-height: 1.6; }
 .flow-step__text { flex: 1; font-size: 13px; }
 .flow-step--done .flow-step__text { text-decoration: line-through; opacity: 0.5; }
 .flow-step--current .flow-step__text { font-weight: 600; }
-
-/* ── Personal View Enhancements ──────────────────────────────────────────── */
-.personal-header-actions { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
 
 /* ── Empty States (isometric) ────────────────────────────────────────────── */
 .empty-state--work .empty-state__svg,
@@ -678,12 +664,12 @@ textarea.input { resize: vertical; min-height: 100px; line-height: 1.6; }
         <p class="view__subtitle">Operational tools and execution console</p>
       </div>
       <div class="tool-grid" id="tool-grid">
-        <div class="card card--interactive tool-card" onclick="openTool('daily')"><span class="tool-card__icon"><i data-lucide="clipboard-list"></i></span><div class="tool-card__name">Daily Control</div><div class="tool-card__desc">Must-wins & blocks</div></div>
+        <div class="card tool-card" style="opacity:0.45;cursor:default" title="Coming soon"><span class="tool-card__icon"><i data-lucide="clipboard-list"></i></span><div class="tool-card__name">Daily Control</div><div class="tool-card__desc" style="color:var(--text-muted)">Phase 4</div></div>
         <div class="card card--interactive tool-card" onclick="openTool('email')"><span class="tool-card__icon"><i data-lucide="mail"></i></span><div class="tool-card__name">Email Intel</div><div class="tool-card__desc">Parse & extract</div></div>
         <div class="card card--interactive tool-card" onclick="openTool('meeting')"><span class="tool-card__icon"><i data-lucide="users"></i></span><div class="tool-card__name">Meetings</div><div class="tool-card__desc">Notes & actions</div></div>
         <div class="card card--interactive tool-card" onclick="openTool('audit')"><span class="tool-card__icon"><i data-lucide="target"></i></span><div class="tool-card__name">Audit</div><div class="tool-card__desc">Strategic review</div></div>
-        <div class="card card--interactive tool-card" onclick="openTool('reports')"><span class="tool-card__icon"><i data-lucide="bar-chart-3"></i></span><div class="tool-card__name">Reports</div><div class="tool-card__desc">Generate outputs</div></div>
-        <div class="card card--interactive tool-card" onclick="openTool('social')"><span class="tool-card__icon"><i data-lucide="share-2"></i></span><div class="tool-card__name">Social</div><div class="tool-card__desc">Content studio</div></div>
+        <div class="card tool-card" style="opacity:0.45;cursor:default" title="Coming soon"><span class="tool-card__icon"><i data-lucide="bar-chart-3"></i></span><div class="tool-card__name">Reports</div><div class="tool-card__desc" style="color:var(--text-muted)">Phase 4</div></div>
+        <div class="card tool-card" style="opacity:0.45;cursor:default" title="Coming soon"><span class="tool-card__icon"><i data-lucide="share-2"></i></span><div class="tool-card__name">Social</div><div class="tool-card__desc" style="color:var(--text-muted)">Phase 4</div></div>
       </div>
       <div class="section-label">Active Work Items</div>
       <div id="work-stream"></div>
@@ -780,7 +766,8 @@ const SB = createClient(
 );
 
 /* ── Auth Redirect ──────────────────────────────────────────────────────── */
-// This URL must also be whitelisted in Supabase > Auth > URL Configuration > Redirect URLs
+// Whitelist this exact base callback URL in Supabase Auth > URL Configuration > Redirect URLs
+// e.g. https://yourdomain.com/streamos.html  (no trailing hash or tokens)
 const AUTH_REDIRECT_URL = window.location.origin + window.location.pathname;
 
 
@@ -803,9 +790,15 @@ function icon(name, size = 16) {
   return `<i data-lucide="${name}" style="width:${size}px;height:${size}px"></i>`;
 }
 
-// Refresh Lucide icons after DOM update
+// Debounced Lucide icon refresh — batches multiple calls in same tick
+let _iconRafId = null;
 function refreshIcons() {
-  if (typeof lucide !== 'undefined') lucide.createIcons();
+  if (typeof lucide === 'undefined') return;
+  if (_iconRafId) return; // already scheduled
+  _iconRafId = requestAnimationFrame(() => {
+    lucide.createIcons();
+    _iconRafId = null;
+  });
 }
 
 function withTimeout(promise, ms, label) {
@@ -831,7 +824,6 @@ function loadLocal() {
     const cached = localStorage.getItem(CACHE_KEY);
     if (cached) {
       items = JSON.parse(cached);
-      render();
       return true;
     }
   } catch (e) { console.warn('Cache read failed:', e); }
@@ -1805,6 +1797,7 @@ function setAuthMsg(msg, type = '') { const el = $('auth-msg'); el.textContent =
 async function sendMagicLink() {
   const email = $('auth-email').value.trim();
   if (!email) { setAuthMsg('Please enter your email.', 'err'); return; }
+  console.log('[StreamOS] Magic link redirect URL:', AUTH_REDIRECT_URL);
   const { error } = await SB.auth.signInWithOtp({ email, options: { emailRedirectTo: AUTH_REDIRECT_URL } });
   if (error) setAuthMsg(error.message, 'err');
   else setAuthMsg('Magic link sent — check your inbox.', 'ok');
@@ -1856,7 +1849,7 @@ function enterDemoMode() {
   USER = { id: 'demo', email: 'demo@local' };
   $('safe-banner').classList.add('show');
   loadLocal();
-  showApp();
+  showApp(); // showApp calls render() + renderBreadcrumb()
   hideBoot();
   applyState('ready');
   showToast('Demo mode active');
@@ -1908,6 +1901,7 @@ async function dbSave(item) {
       applyState('session_expired', 'Session expired.');
     } else {
       // Non-auth save failure: reset to ready, do not show reconnect banner
+      console.error('[StreamOS] dbSave failed (non-auth):', e);
       applyState('ready');
     }
     throw e;
@@ -2306,18 +2300,18 @@ function openTool(toolId) {
   $('tool-title').textContent = tool.name || toolId;
   $('tool-subtitle').textContent = tool.desc || '';
 
+  // Set view-tool visible immediately (no flash of empty tool-content)
+  renderBreadcrumb();
+  render();
+
+  // Populate content with a brief fade transition
   const content = $('tool-content');
   content.classList.add('transitioning');
   requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      content.innerHTML = tool.render();
-      refreshIcons();
-      content.classList.remove('transitioning');
-    });
+    content.innerHTML = tool.render();
+    refreshIcons();
+    content.classList.remove('transitioning');
   });
-
-  renderBreadcrumb();
-  render();
 }
 
 function closeTool() {
@@ -2435,7 +2429,8 @@ async function completeRoutine(id) {
   };
   const prev = { ...items[idx], content: { ...items[idx].content } };
   Object.assign(items[idx].content, patch.content);
-  renderRoutineTool();
+  // Re-render: personal stream if on home, routines tool if open
+  if (currentTool === 'routines') renderRoutineTool(); else render();
 
   try {
     await dbUpdate(id, patch);
@@ -2443,7 +2438,7 @@ async function completeRoutine(id) {
     showToast(newStreak > 1 ? `🔥 ${newStreak} day streak!` : 'Routine done');
   } catch (e) {
     items[idx] = prev;
-    renderRoutineTool();
+    if (currentTool === 'routines') renderRoutineTool(); else render();
     showToast('Failed to update');
   }
 }
@@ -2454,7 +2449,7 @@ async function deleteRoutine(id) {
   try {
     await dbDelete(id);
     showToast('Routine removed');
-    if (currentTool === 'routines') renderRoutineTool();
+    if (currentTool === 'routines') renderRoutineTool(); else render();
   } catch (e) { showToast('Delete failed'); }
 }
 
@@ -2476,7 +2471,7 @@ async function addRoutine(title, anchor, cadence) {
     if (saved) {
       if (!safeMode) { saved.node_type = saved.node_type || 'item'; items.unshift(saved); }
       saveLocal();
-      if (currentTool === 'routines') renderRoutineTool();
+      if (currentTool === 'routines') renderRoutineTool(); else render();
       showToast('Routine added');
     }
   } catch (e) { showToast('Failed to save'); }
@@ -2516,7 +2511,10 @@ async function saveFlow(title, steps, context = 'work') {
       render();
       showToast('Flow saved');
     }
-  } catch (e) { showToast('Failed to save flow'); }
+  } catch (e) {
+    console.error('[StreamOS] saveFlow failed:', e);
+    showToast('Failed to save flow');
+  }
 }
 
 async function advanceFlow(id) {
