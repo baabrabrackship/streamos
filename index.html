@@ -1,0 +1,2649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>StreamOS</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+/* ═══════════════════════════════════════════════════════════════════════════
+   STREAMOS — PHASE 2: TOOL REGISTRY + FUNCTIONAL WORK TOOLS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── PIXEL POETRY TOKENS ──────────────────────────────────────────────────── */
+:root {
+  --pp-border: 2px solid #000;
+  --pp-border-w: 2px;
+  --pp-radius: 0px;
+  --pp-shadow: 4px 4px 0px #000;
+  --pp-shadow-sm: 2px 2px 0px #000;
+  --pp-shadow-hover: 6px 6px 0px #000;
+  --pp-shadow-active: 1px 1px 0px #000;
+  --pp-font: "JetBrains Mono", "Roboto Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  
+  --pp-dot-color: #c4c4c4;
+  --pp-dot-size: 1px;
+  --pp-dot-gap: 24px;
+  
+  --bg: #f0f0f0;
+  --surface: #ffffff;
+  --surface-2: #e8e8e8;
+  --surface-3: #d4d4d4;
+  --border-color: #000000;
+  --border-light: #666666;
+  
+  --text-primary: #000000;
+  --text-secondary: #444444;
+  --text-tertiary: #777777;
+  --text-muted: #999999;
+  --text-inverse: #ffffff;
+  
+  --success: #00a86b;
+  --success-bg: #d4f5e4;
+  --warning: #ff9500;
+  --warning-bg: #fff3d4;
+  --danger: #ff3b30;
+  --danger-bg: #ffd4d4;
+  --info: #007aff;
+  --info-bg: #d4e8ff;
+  
+  --topbar-h: 56px;
+  --crumb-h: 44px;
+  --shell-h: calc(var(--topbar-h) + var(--crumb-h));
+  --max-w: 680px;
+  --touch-min: 44px;
+}
+
+/* ── MODE TOKENS ──────────────────────────────────────────────────────────── */
+:root[data-mode="work"] {
+  --mode-accent: #ffcc00;
+  --mode-accent-dark: #d4a900;
+  --mode-accent-bg: #fffacd;
+  --mode-accent-text: #000000;
+  --mode-surface: #1a1a1a;
+  --mode-surface-alt: #2d2d2d;
+  --mode-header-bg: #000000;
+  --mode-header-text: #ffcc00;
+  --mode-tag-bg: #ffcc00;
+  --mode-tag-text: #000000;
+  --mode-glow: 0 0 10px rgba(255, 204, 0, 0.3);
+}
+
+:root[data-mode="personal"] {
+  --mode-accent: #14b8a6;
+  --mode-accent-dark: #0d9488;
+  --mode-accent-bg: #ccfbf1;
+  --mode-accent-text: #000000;
+  --mode-surface: #f0fdfa;
+  --mode-surface-alt: #e0f7f4;
+  --mode-header-bg: #0f766e;
+  --mode-header-text: #ffffff;
+  --mode-tag-bg: #14b8a6;
+  --mode-tag-text: #ffffff;
+  --mode-glow: 0 0 10px rgba(20, 184, 166, 0.3);
+  --mode-accent-2: #a855f7;
+  --mode-accent-2-bg: #f3e8ff;
+}
+
+/* ── DARK MODE ────────────────────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0a0a0a;
+    --surface: #1a1a1a;
+    --surface-2: #2a2a2a;
+    --surface-3: #3a3a3a;
+    --border-color: #ffffff;
+    --border-light: #888888;
+    --pp-dot-color: #333333;
+    --text-primary: #ffffff;
+    --text-secondary: #cccccc;
+    --text-tertiary: #999999;
+    --text-muted: #666666;
+    --text-inverse: #000000;
+    --pp-border: 2px solid #fff;
+    --pp-shadow: 4px 4px 0px #fff;
+    --pp-shadow-sm: 2px 2px 0px #fff;
+    --pp-shadow-hover: 6px 6px 0px #fff;
+    --pp-shadow-active: 1px 1px 0px #fff;
+    --success-bg: #0a2e1f;
+    --warning-bg: #2e1f0a;
+    --danger-bg: #2e0a0a;
+    --info-bg: #0a1f2e;
+  }
+  :root[data-mode="work"] {
+    --mode-accent-bg: #2e2a0a;
+    --mode-header-bg: #ffcc00;
+    --mode-header-text: #000000;
+  }
+  :root[data-mode="personal"] {
+    --mode-accent-bg: #0a2e2a;
+    --mode-surface: #0a1f1d;
+    --mode-surface-alt: #0f2926;
+    --mode-header-bg: #14b8a6;
+    --mode-header-text: #000000;
+    --mode-accent-2-bg: #1f0a2e;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BASE STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { font-size: 14px; }
+body {
+  font-family: var(--pp-font);
+  background-color: var(--bg);
+  background-image: radial-gradient(var(--pp-dot-color) var(--pp-dot-size), transparent 0);
+  background-size: var(--pp-dot-gap) var(--pp-dot-gap);
+  color: var(--text-primary);
+  min-height: 100vh;
+  min-height: 100dvh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BRUTALIST COMPONENTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: var(--pp-font); font-size: 12px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  padding: 12px 20px; min-height: var(--touch-min);
+  border: var(--pp-border); border-radius: var(--pp-radius);
+  background: var(--surface); color: var(--text-primary);
+  cursor: pointer; user-select: none; white-space: nowrap;
+  transition: transform 0.1s, box-shadow 0.1s;
+  box-shadow: var(--pp-shadow);
+}
+.btn:hover { transform: translate(-2px, -2px); box-shadow: var(--pp-shadow-hover); }
+.btn:active { transform: translate(2px, 2px); box-shadow: var(--pp-shadow-active); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: var(--pp-shadow); }
+.btn:focus-visible { outline: 3px solid var(--mode-accent); outline-offset: 2px; }
+.btn--primary { background: var(--mode-accent); color: var(--mode-accent-text); }
+.btn--danger { background: var(--danger); color: var(--text-inverse); }
+.btn--success { background: var(--success); color: var(--text-inverse); }
+.btn--ghost { background: transparent; box-shadow: none; border-color: transparent; }
+.btn--ghost:hover { background: var(--surface-2); transform: none; box-shadow: none; }
+.btn--sm { padding: 8px 14px; font-size: 11px; min-height: 36px; box-shadow: var(--pp-shadow-sm); }
+.btn--sm:hover { box-shadow: var(--pp-shadow); }
+
+.card {
+  background: var(--surface); border: var(--pp-border);
+  border-radius: var(--pp-radius); box-shadow: var(--pp-shadow);
+}
+.card--interactive { cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; }
+.card--interactive:hover { transform: translate(-2px, -2px); box-shadow: var(--pp-shadow-hover); }
+.card--interactive:active { transform: translate(2px, 2px); box-shadow: var(--pp-shadow-active); }
+.card--accent { border-left-width: 6px; border-left-color: var(--mode-accent); }
+.card--muted { background: var(--surface-2); box-shadow: var(--pp-shadow-sm); }
+
+.input {
+  font-family: var(--pp-font); font-size: 14px;
+  padding: 12px 14px; min-height: var(--touch-min); width: 100%;
+  background: var(--surface); border: var(--pp-border);
+  border-radius: var(--pp-radius); color: var(--text-primary);
+  outline: none; transition: box-shadow 0.1s;
+}
+.input:focus { box-shadow: var(--pp-shadow-sm); }
+.input::placeholder { color: var(--text-muted); }
+textarea.input { resize: vertical; min-height: 100px; line-height: 1.6; }
+
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--pp-font); font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  padding: 6px 12px; border: var(--pp-border); border-radius: var(--pp-radius);
+  background: var(--surface); color: var(--text-primary);
+  cursor: pointer; user-select: none; transition: background 0.1s;
+}
+.pill:hover { background: var(--surface-2); }
+.pill--active { background: var(--mode-accent); color: var(--mode-accent-text); border-color: var(--mode-accent); }
+.pill--work.pill--active { background: #ffcc00; color: #000; border-color: #000; }
+.pill--personal.pill--active { background: #14b8a6; color: #fff; border-color: #000; }
+
+.section-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.5px; color: var(--text-tertiary);
+  padding: 16px 0 8px; display: flex; align-items: center; gap: 12px;
+}
+.section-label::after { content: ''; flex: 1; height: 2px; background: var(--border-color); }
+
+.field { margin-bottom: 16px; }
+.field__label {
+  display: block; font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--text-secondary); margin-bottom: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SHELL STRUCTURE
+   ═══════════════════════════════════════════════════════════════════════════ */
+#boot {
+  position: fixed; inset: 0; background: var(--bg);
+  background-image: radial-gradient(var(--pp-dot-color) var(--pp-dot-size), transparent 0);
+  background-size: var(--pp-dot-gap) var(--pp-dot-gap);
+  z-index: 9999; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 20px;
+}
+#boot.off { display: none; }
+.boot-logo { font-size: 28px; font-weight: 700; letter-spacing: -1px; display: flex; align-items: center; gap: 8px; }
+.boot-logo__dot { width: 12px; height: 12px; background: var(--mode-accent); border: 2px solid var(--border-color); animation: boot-pulse 1s ease-in-out infinite; }
+@keyframes boot-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.9); } }
+.boot-status { font-size: 12px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 2px; }
+#boot-err { display: none; text-align: center; max-width: 320px; }
+#boot-err.show { display: block; }
+.boot-err__title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.boot-err__msg { font-size: 12px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.6; }
+.boot-err__actions { display: flex; gap: 12px; justify-content: center; }
+
+#auth { display: none; min-height: 100vh; min-height: 100dvh; align-items: center; justify-content: center; padding: 24px; }
+#auth.show { display: flex; }
+.auth-card { width: 100%; max-width: 400px; padding: 40px 32px; }
+.auth-header { text-align: center; margin-bottom: 32px; }
+.auth-logo { font-size: 24px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.auth-logo__dot { width: 10px; height: 10px; background: var(--mode-accent); border: 2px solid var(--border-color); }
+.auth-tagline { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
+.auth-field { margin-bottom: 16px; }
+.auth-label { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 8px; }
+.auth-divider { text-align: center; font-size: 11px; color: var(--text-muted); margin: 20px 0; position: relative; }
+.auth-divider::before, .auth-divider::after { content: ''; position: absolute; top: 50%; width: calc(50% - 20px); height: 2px; background: var(--border-color); }
+.auth-divider::before { left: 0; }
+.auth-divider::after { right: 0; }
+.auth-msg { font-size: 12px; text-align: center; margin-top: 16px; min-height: 20px; }
+.auth-msg--ok { color: var(--success); }
+.auth-msg--err { color: var(--danger); }
+
+.topbar { position: sticky; top: 0; z-index: 100; height: var(--topbar-h); background: var(--surface); border-bottom: var(--pp-border); }
+.topbar__inner { max-width: var(--max-w); margin: 0 auto; padding: 0 16px; height: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.topbar__brand { font-size: 16px; font-weight: 700; letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.topbar__dot { width: 10px; height: 10px; background: var(--mode-accent); border: 2px solid var(--border-color); transition: background 0.3s; }
+
+.mode-toggle { display: flex; border: var(--pp-border); background: var(--surface-2); }
+.mode-toggle__btn { font-family: var(--pp-font); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 8px 16px; min-height: 36px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; transition: background 0.15s, color 0.15s; }
+.mode-toggle__btn:first-child { border-right: var(--pp-border); }
+.mode-toggle__btn--active[data-mode="work"] { background: #ffcc00; color: #000; }
+.mode-toggle__btn--active[data-mode="personal"] { background: #14b8a6; color: #fff; }
+
+.topbar__right { display: flex; align-items: center; gap: 10px; }
+.topbar__status { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-tertiary); padding: 6px 10px; border: 2px solid var(--border-light); }
+.topbar__sync { width: 8px; height: 8px; background: var(--success); transition: background 0.3s; }
+.topbar__sync--saving { background: var(--warning); }
+.topbar__sync--error { background: var(--danger); }
+.topbar__sync--offline { background: var(--text-muted); }
+.topbar__profile { font-family: var(--pp-font); font-size: 11px; font-weight: 600; padding: 8px 12px; border: var(--pp-border); background: var(--surface); cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.1s; }
+.topbar__profile:hover { background: var(--surface-2); }
+
+.profile-menu { position: absolute; top: calc(var(--topbar-h) + 4px); right: 16px; min-width: 200px; background: var(--surface); border: var(--pp-border); box-shadow: var(--pp-shadow); z-index: 200; display: none; }
+.profile-menu.open { display: block; }
+.profile-menu__header { padding: 12px 16px; border-bottom: var(--pp-border); }
+.profile-menu__email { font-size: 11px; color: var(--text-tertiary); word-break: break-all; }
+.profile-menu__item { display: block; width: 100%; text-align: left; font-family: var(--pp-font); font-size: 12px; padding: 12px 16px; border: none; background: none; color: var(--text-primary); cursor: pointer; transition: background 0.1s; }
+.profile-menu__item:hover { background: var(--surface-2); }
+.profile-menu__item--danger { color: var(--danger); }
+.profile-menu__divider { height: 2px; background: var(--border-color); }
+
+.breadcrumb-bar { position: sticky; top: var(--topbar-h); z-index: 90; height: var(--crumb-h); background: var(--bg); border-bottom: 2px solid var(--border-light); }
+.breadcrumb-bar__inner { max-width: var(--max-w); margin: 0 auto; padding: 0 16px; height: 100%; display: flex; align-items: center; gap: 4px; overflow-x: auto; }
+.breadcrumb-bar__seg { font-size: 11px; color: var(--text-tertiary); white-space: nowrap; display: flex; align-items: center; gap: 4px; }
+.breadcrumb-bar__seg--clickable { cursor: pointer; transition: color 0.1s; }
+.breadcrumb-bar__seg--clickable:hover { color: var(--mode-accent); }
+.breadcrumb-bar__seg--current { color: var(--text-primary); font-weight: 600; }
+.breadcrumb-bar__sep { color: var(--text-muted); }
+
+.safe-banner { display: none; position: sticky; top: var(--shell-h); z-index: 80; background: var(--danger); color: var(--text-inverse); padding: 10px 16px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; text-align: center; }
+.safe-banner.show { display: block; }
+
+.session-banner { display: none; position: sticky; top: var(--shell-h); z-index: 80; background: var(--warning-bg); border-bottom: var(--pp-border); padding: 12px 16px; }
+.session-banner.show { display: block; }
+.session-banner__inner { max-width: var(--max-w); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.session-banner__msg { font-size: 12px; font-weight: 600; }
+.session-banner__actions { display: flex; gap: 8px; }
+
+#app { display: none; padding-bottom: 100px; }
+#app.show { display: block; }
+.page { max-width: var(--max-w); margin: 0 auto; padding: 0 16px; }
+.view { display: none; padding-top: 24px; }
+.view.show { display: block; }
+.view__header { margin-bottom: 24px; }
+.view__title { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px; }
+.view__subtitle { font-size: 12px; color: var(--text-secondary); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TOOL GRID
+   ═══════════════════════════════════════════════════════════════════════════ */
+.tool-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+@media (min-width: 480px) { .tool-grid { grid-template-columns: repeat(3, 1fr); } }
+.tool-card { padding: 20px 16px; text-align: center; transition: transform 0.1s, box-shadow 0.1s; }
+.tool-card:hover { transform: translate(-2px, -2px); box-shadow: var(--pp-shadow-hover); }
+.tool-card:active { transform: translate(2px, 2px); box-shadow: var(--pp-shadow-active); }
+.tool-card__icon { margin-bottom: 12px; display: flex; justify-content: center; align-items: center; }
+.tool-card__icon svg { width: 28px; height: 28px; stroke-width: 2; }
+.tool-card__name { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+.tool-card__desc { font-size: 10px; color: var(--text-tertiary); line-height: 1.4; }
+
+/* Icon utilities */
+.icon { display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; }
+.icon svg { width: 16px; height: 16px; stroke-width: 2; }
+.icon--sm svg { width: 14px; height: 14px; }
+.icon--lg svg { width: 24px; height: 24px; }
+.icon--xl svg { width: 32px; height: 32px; }
+.icon--xxl svg { width: 48px; height: 48px; opacity: 0.5; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STREAM
+   ═══════════════════════════════════════════════════════════════════════════ */
+.stream-group { border: var(--pp-border); background: var(--surface); box-shadow: var(--pp-shadow-sm); margin-bottom: 16px; }
+.stream-item { padding: 16px; border-bottom: 2px solid var(--border-light); display: flex; align-items: flex-start; gap: 12px; cursor: pointer; transition: background 0.1s; }
+.stream-item:last-child { border-bottom: none; }
+.stream-item:hover { background: var(--surface-2); }
+.stream-item--done { opacity: 0.4; }
+.stream-item--pinned { background: var(--mode-accent-bg); }
+.stream-item__check { width: 24px; height: 24px; border: var(--pp-border); background: var(--surface); flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.1s; }
+.stream-item__check:hover { background: var(--surface-2); }
+.stream-item__check--done { background: var(--mode-accent); color: var(--mode-accent-text); }
+.stream-item__content { flex: 1; min-width: 0; }
+.stream-item__title { font-size: 14px; font-weight: 500; margin-bottom: 4px; word-break: break-word; }
+.stream-item__meta { font-size: 11px; color: var(--text-tertiary); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.stream-item__tag { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 8px; border: 2px solid var(--border-color); background: var(--surface-2); }
+.stream-item__tag--email { background: var(--info-bg); border-color: var(--info); }
+.stream-item__tag--meeting { background: var(--warning-bg); border-color: var(--warning); }
+.stream-item__tag--audit { background: var(--success-bg); border-color: var(--success); }
+.stream-item__actions { display: flex; gap: 4px; margin-top: 8px; }
+
+.empty-state { text-align: center; padding: 60px 24px; }
+.empty-state__icon { margin-bottom: 16px; display: flex; justify-content: center; }
+.empty-state__icon svg { width: 48px; height: 48px; opacity: 0.5; }
+.empty-state__title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.empty-state__text { font-size: 12px; color: var(--text-secondary); line-height: 1.6; max-width: 280px; margin: 0 auto 24px; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TOOL-SPECIFIC STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Email Intel Tool */
+.tool-email__output { margin-top: 24px; }
+.tool-email__section { margin-bottom: 20px; }
+.tool-email__section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.tool-email__section-title::before { content: ''; width: 4px; height: 14px; background: var(--mode-accent); }
+.tool-email__list { list-style: none; padding: 0; }
+.tool-email__list-item { padding: 10px 12px; border: 2px solid var(--border-light); margin-bottom: 8px; font-size: 13px; display: flex; align-items: flex-start; gap: 10px; }
+.tool-email__list-item::before { content: '→'; color: var(--mode-accent); font-weight: 700; flex-shrink: 0; }
+.tool-email__deadline { color: var(--danger); font-weight: 600; }
+.tool-email__draft { padding: 16px; border: var(--pp-border); background: var(--surface-2); font-size: 13px; line-height: 1.7; white-space: pre-wrap; }
+
+/* Meeting Tool */
+.tool-meeting__layout { display: grid; grid-template-columns: 1fr; gap: 16px; }
+@media (min-width: 560px) { .tool-meeting__layout { grid-template-columns: 1fr 1fr; } }
+.tool-meeting__panel { min-height: 200px; }
+.tool-meeting__panel-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--border-color); display: flex; align-items: center; gap: 8px; }
+.tool-meeting__actions-list { list-style: none; padding: 0; }
+.tool-meeting__action { padding: 12px; border: var(--pp-border); margin-bottom: 8px; display: flex; align-items: center; gap: 10px; background: var(--surface); transition: background 0.1s; }
+.tool-meeting__action:hover { background: var(--surface-2); }
+.tool-meeting__action-check { width: 20px; height: 20px; border: var(--pp-border); background: var(--surface); flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+.tool-meeting__action-check:hover { background: var(--mode-accent-bg); }
+.tool-meeting__action-check--done { background: var(--success); color: var(--text-inverse); }
+.tool-meeting__action-text { flex: 1; font-size: 13px; }
+.tool-meeting__action--done .tool-meeting__action-text { text-decoration: line-through; opacity: 0.5; }
+.tool-meeting__empty { font-size: 12px; color: var(--text-muted); padding: 24px; text-align: center; border: 2px dashed var(--border-light); }
+
+/* Audit Tool */
+.tool-audit__progress { display: flex; gap: 4px; margin-bottom: 24px; }
+.tool-audit__step { flex: 1; height: 6px; background: var(--surface-2); border: 2px solid var(--border-color); }
+.tool-audit__step--active { background: var(--mode-accent); }
+.tool-audit__step--done { background: var(--success); }
+.tool-audit__step-labels { display: flex; justify-content: space-between; margin-bottom: 24px; }
+.tool-audit__step-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+.tool-audit__step-label--active { color: var(--mode-accent); }
+.tool-audit__step-label--done { color: var(--success); }
+.tool-audit__question { font-size: 16px; font-weight: 600; margin-bottom: 16px; line-height: 1.5; }
+.tool-audit__hint { font-size: 12px; color: var(--text-secondary); margin-bottom: 20px; }
+.tool-audit__nav { display: flex; gap: 12px; margin-top: 24px; }
+.tool-audit__summary { padding: 20px; border: var(--pp-border); background: var(--surface-2); margin-top: 20px; }
+.tool-audit__summary-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+.tool-audit__summary-item { font-size: 12px; margin-bottom: 8px; padding-left: 12px; border-left: 3px solid var(--mode-accent); }
+.tool-audit__decision { font-size: 18px; font-weight: 700; padding: 20px; background: var(--mode-accent); color: var(--mode-accent-text); border: var(--pp-border); margin-top: 20px; text-align: center; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FAB & SHEETS
+   ═══════════════════════════════════════════════════════════════════════════ */
+.fab { position: fixed; bottom: 24px; right: 24px; z-index: 50; display: flex; align-items: center; gap: 8px; font-family: var(--pp-font); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 16px 24px; background: var(--mode-accent); color: var(--mode-accent-text); border: var(--pp-border); box-shadow: var(--pp-shadow); cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; }
+.fab:hover { transform: translate(-2px, -2px); box-shadow: var(--pp-shadow-hover); }
+.fab:active { transform: translate(2px, 2px); box-shadow: var(--pp-shadow-active); }
+.fab:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.fab__icon { font-size: 18px; font-weight: 400; }
+
+.sheet-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); z-index: 500; align-items: flex-end; justify-content: center; }
+.sheet-backdrop.open { display: flex; }
+@media (min-width: 640px) { .sheet-backdrop { align-items: center; padding: 24px; } }
+.sheet { width: 100%; max-width: 560px; max-height: 90vh; max-height: 90dvh; overflow-y: auto; background: var(--surface); border: var(--pp-border); border-bottom: none; box-shadow: 0 -4px 0 var(--border-color); }
+@media (min-width: 640px) { .sheet { border-bottom: var(--pp-border); box-shadow: var(--pp-shadow); max-height: 80vh; } }
+.sheet__handle { width: 40px; height: 4px; background: var(--border-color); margin: 12px auto; }
+@media (min-width: 640px) { .sheet__handle { display: none; } }
+.sheet__body { padding: 0 20px 32px; }
+.sheet__title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+
+.toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); z-index: 600; background: var(--text-primary); color: var(--text-inverse); font-size: 12px; font-weight: 600; padding: 12px 20px; border: 2px solid var(--text-inverse); opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+.toast.show { opacity: 1; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 479px) {
+  .hide-mobile { display: none !important; }
+  .topbar__inner { padding: 0 12px; }
+  .mode-toggle__btn { padding: 8px 12px; font-size: 10px; }
+  .tool-grid { gap: 8px; }
+  .tool-card { padding: 16px 12px; }
+  .tool-card__icon { font-size: 24px; margin-bottom: 8px; }
+  .fab { bottom: 16px; right: 16px; padding: 14px 20px; }
+}
+@media (min-width: 640px) and (max-width: 1023px) { :root { --max-w: 720px; } }
+@media (min-width: 1024px) { :root { --max-w: 800px; } html { font-size: 15px; } }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PHASE 3 — PERSONAL TOOLS & DAY CLOSURE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Tool Transition ─────────────────────────────────────────────────────── */
+#tool-content { transition: opacity 0.15s ease, transform 0.15s ease; }
+#tool-content.transitioning { opacity: 0; transform: translateY(4px); }
+
+/* ── In-App Confirm Dialog ───────────────────────────────────────────────── */
+.confirm-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  z-index: 800; align-items: center; justify-content: center; padding: 24px;
+}
+.confirm-overlay.open { display: flex; }
+.confirm-dialog {
+  width: 100%; max-width: 380px; background: var(--surface);
+  border: var(--pp-border); box-shadow: var(--pp-shadow); padding: 28px;
+}
+.confirm-dialog__title { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+.confirm-dialog__msg { font-size: 13px; color: var(--text-secondary); margin-bottom: 24px; line-height: 1.6; }
+.confirm-dialog__actions { display: flex; gap: 12px; justify-content: flex-end; }
+
+/* ── Ritual Modal ────────────────────────────────────────────────────────── */
+.ritual-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+  z-index: 700; align-items: flex-end; justify-content: center;
+}
+.ritual-overlay.open { display: flex; }
+@media (min-width: 640px) { .ritual-overlay { align-items: center; padding: 24px; } }
+.ritual-modal {
+  width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto;
+  background: var(--surface); border: var(--pp-border);
+  border-bottom: none; box-shadow: 0 -4px 0 var(--border-color);
+}
+@media (min-width: 640px) { .ritual-modal { border-bottom: var(--pp-border); box-shadow: var(--pp-shadow); max-height: 85vh; } }
+.ritual-modal__handle { width: 40px; height: 4px; background: var(--border-color); margin: 12px auto 0; }
+@media (min-width: 640px) { .ritual-modal__handle { display: none; } }
+.ritual-modal__header {
+  padding: 20px 24px 16px; border-bottom: var(--pp-border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.ritual-modal__title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.ritual-modal__close { padding: 6px; border: none; background: none; cursor: pointer; color: var(--text-tertiary); font-size: 18px; line-height: 1; }
+.ritual-modal__close:hover { color: var(--text-primary); }
+.ritual-modal__body { padding: 24px; }
+.ritual-modal__steps { display: flex; gap: 4px; margin-bottom: 24px; }
+.ritual-modal__step { flex: 1; height: 5px; background: var(--surface-2); border: 2px solid var(--border-color); }
+.ritual-modal__step--done { background: var(--success); }
+.ritual-modal__step--active { background: var(--mode-accent); }
+.ritual-step__label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 8px; }
+.ritual-step__question { font-size: 15px; font-weight: 600; margin-bottom: 6px; line-height: 1.5; }
+.ritual-step__hint { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; }
+.ritual-modal__nav { display: flex; gap: 12px; margin-top: 24px; align-items: center; justify-content: space-between; }
+.ritual-complete { text-align: center; padding: 16px 0 8px; }
+.ritual-complete__icon { font-size: 40px; margin-bottom: 16px; }
+.ritual-complete__title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.ritual-complete__sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 24px; line-height: 1.6; }
+.ritual-dot-glow { animation: dot-glow 2s ease-in-out 3; }
+@keyframes dot-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(20,184,166,0); }
+  50% { box-shadow: 0 0 0 8px rgba(20,184,166,0.4); }
+}
+
+/* ── Energy Gauge ────────────────────────────────────────────────────────── */
+.energy-gauge { margin-bottom: 24px; }
+.energy-gauge__label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-tertiary); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+.energy-gauge__label-val { color: var(--text-primary); font-size: 12px; }
+.energy-gauge__track { display: flex; gap: 6px; }
+.energy-gauge__pip {
+  flex: 1; height: 10px; border: var(--pp-border); background: var(--surface-2);
+  cursor: pointer; transition: background 0.1s, transform 0.1s;
+}
+.energy-gauge__pip:hover { transform: scaleY(1.3); }
+.energy-gauge__pip--filled { background: var(--mode-accent); }
+.energy-gauge__pip--1 { background: var(--danger); border-color: var(--danger); }
+.energy-gauge__pip--2 { background: var(--warning); border-color: var(--warning); }
+.energy-gauge__pip--3 { background: var(--warning); border-color: var(--warning); }
+.energy-gauge__pip--4 { background: var(--success); border-color: var(--success); }
+.energy-gauge__pip--5 { background: var(--mode-accent); border-color: var(--mode-accent); }
+.energy-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-top: 5px; }
+
+/* ── Routine Cards ───────────────────────────────────────────────────────── */
+.routine-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.routine-card {
+  background: var(--surface); border: var(--pp-border); padding: 14px 16px;
+  display: flex; align-items: center; gap: 14px;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.routine-card__check {
+  width: 28px; height: 28px; border: var(--pp-border); background: var(--surface);
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background 0.1s;
+}
+.routine-card__check:hover { background: var(--mode-accent-bg); }
+.routine-card__check--done { background: var(--success); color: var(--text-inverse); border-color: var(--success); }
+.routine-card__body { flex: 1; min-width: 0; }
+.routine-card__title { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+.routine-card__meta { font-size: 11px; color: var(--text-tertiary); display: flex; align-items: center; gap: 8px; }
+.routine-card__streak { font-weight: 700; color: var(--warning); }
+.routine-card--done .routine-card__title { text-decoration: line-through; opacity: 0.5; }
+.routine-card__delete { background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 4px; opacity: 0; transition: opacity 0.15s; }
+.routine-card:hover .routine-card__delete { opacity: 1; }
+.routine-card__delete:hover { color: var(--danger); }
+
+/* Anchor pills for routines */
+.anchor-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.anchor-pill { font-family: var(--pp-font); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; padding: 6px 10px; border: var(--pp-border); background: var(--surface); cursor: pointer; transition: background 0.1s; }
+.anchor-pill:hover { background: var(--surface-2); }
+.anchor-pill--active { background: var(--mode-accent); color: var(--mode-accent-text); }
+
+/* ── Reflection Card in stream ───────────────────────────────────────────── */
+.stream-item__tag--reflection { background: var(--mode-accent-2-bg, #f3e8ff); border-color: var(--mode-accent-2, #a855f7); }
+.stream-item__tag--routine { background: var(--mode-accent-bg); border-color: var(--mode-accent); }
+
+/* ── Flow Cards ──────────────────────────────────────────────────────────── */
+.flow-card { background: var(--surface); border: var(--pp-border); margin-bottom: 12px; }
+.flow-card__header { padding: 14px 16px; display: flex; align-items: center; gap: 12px; border-bottom: var(--pp-border); cursor: pointer; }
+.flow-card__header:hover { background: var(--surface-2); }
+.flow-card__title { flex: 1; font-size: 13px; font-weight: 600; }
+.flow-card__progress { font-size: 11px; color: var(--text-muted); }
+.flow-card__steps { padding: 0; }
+.flow-step { padding: 12px 16px; border-bottom: 2px solid var(--border-light); display: flex; align-items: center; gap: 12px; }
+.flow-step:last-child { border-bottom: none; }
+.flow-step__num { width: 22px; height: 22px; border: var(--pp-border); font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.flow-step__num--current { background: var(--mode-accent); color: var(--mode-accent-text); border-color: var(--mode-accent); }
+.flow-step__num--done { background: var(--success); color: var(--text-inverse); border-color: var(--success); }
+.flow-step__text { flex: 1; font-size: 13px; }
+.flow-step--done .flow-step__text { text-decoration: line-through; opacity: 0.5; }
+.flow-step--current .flow-step__text { font-weight: 600; }
+
+/* ── Personal View Enhancements ──────────────────────────────────────────── */
+.personal-header-actions { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
+
+/* ── Empty States (isometric) ────────────────────────────────────────────── */
+.empty-state--work .empty-state__svg,
+.empty-state--personal .empty-state__svg { margin: 0 auto 20px; display: block; opacity: 0.7; }
+</style>
+</head>
+<body>
+
+<!-- BOOT -->
+<div id="boot">
+  <div class="boot-logo"><div class="boot-logo__dot"></div>StreamOS</div>
+  <div class="boot-status" id="boot-status">Initializing...</div>
+  <div id="boot-err">
+    <div class="boot-err__title">Connection Failed</div>
+    <div class="boot-err__msg" id="boot-err-msg">Unable to reach the server.</div>
+    <div class="boot-err__actions">
+      <button class="btn btn--primary btn--sm" onclick="retryBoot()">Retry</button>
+      <button class="btn btn--sm" onclick="enterDemoMode()">Demo Mode</button>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH -->
+<div id="auth">
+  <div class="auth-card card">
+    <div class="auth-header">
+      <div class="auth-logo"><div class="auth-logo__dot"></div>StreamOS</div>
+      <div class="auth-tagline">Your daily operating system</div>
+    </div>
+    <div id="auth-magic">
+      <div class="auth-field">
+        <label class="auth-label">Email Address</label>
+        <input class="input" id="auth-email" type="email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <button class="btn btn--primary" style="width:100%" onclick="sendMagicLink()">Send Magic Link</button>
+      <div class="auth-divider">or</div>
+      <button class="btn" style="width:100%" onclick="showPwForm()">Sign In With Password</button>
+    </div>
+    <div id="auth-pw" style="display:none">
+      <div class="auth-field">
+        <label class="auth-label">Email Address</label>
+        <input class="input" id="pw-email" type="email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">Password</label>
+        <input class="input" id="pw-pass" type="password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn btn--primary" style="width:100%" onclick="signInPw()">Sign In</button>
+      <div style="margin-top:12px"><button class="btn btn--ghost btn--sm" onclick="showMagicForm()">← Use Magic Link Instead</button></div>
+    </div>
+    <div class="auth-msg" id="auth-msg"></div>
+    <div style="margin-top:24px;padding-top:24px;border-top:2px solid var(--border-light)">
+      <button class="btn" style="width:100%" onclick="enterDemoMode()">Enter Demo Mode</button>
+      <div style="font-size:10px;color:var(--text-muted);text-align:center;margin-top:8px">No account needed — data saved locally</div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header class="topbar">
+    <div class="topbar__inner">
+      <div class="topbar__brand"><div class="topbar__dot"></div>StreamOS</div>
+      <div class="mode-toggle">
+        <button class="mode-toggle__btn" data-mode="work" onclick="setMode('work')">Work</button>
+        <button class="mode-toggle__btn" data-mode="personal" onclick="setMode('personal')">Personal</button>
+      </div>
+      <div class="topbar__right">
+        <div class="topbar__status hide-mobile"><div class="topbar__sync" id="sync-dot"></div><span id="sync-label">Synced</span></div>
+        <button class="topbar__profile" id="profile-btn" onclick="toggleProfileMenu()"><span id="profile-name">—</span><span>▾</span></button>
+      </div>
+    </div>
+    <div class="profile-menu" id="profile-menu">
+      <div class="profile-menu__header"><div class="profile-menu__email" id="profile-email">—</div></div>
+      <button class="profile-menu__item" onclick="handleReconnect();closeProfileMenu()">Reconnect</button>
+      <button class="profile-menu__item" onclick="openRitual()">Close Day...</button>
+      <div class="profile-menu__divider"></div>
+      <button class="profile-menu__item profile-menu__item--danger" onclick="signOut()">Sign Out</button>
+    </div>
+  </header>
+
+  <nav class="breadcrumb-bar"><div class="breadcrumb-bar__inner" id="breadcrumb"></div></nav>
+  <div class="safe-banner" id="safe-banner"><i data-lucide="alert-triangle" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:6px"></i> Offline Mode — Changes saved locally</div>
+  <div class="session-banner" id="session-banner">
+    <div class="session-banner__inner">
+      <span class="session-banner__msg" id="session-msg">Session expired.</span>
+      <div class="session-banner__actions">
+        <button class="btn btn--sm" onclick="handleReconnect()">Reconnect</button>
+        <button class="btn btn--danger btn--sm" onclick="signOut()">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="page">
+    <!-- WORK VIEW -->
+    <div class="view" id="view-work">
+      <div class="view__header">
+        <h1 class="view__title">Work Dashboard</h1>
+        <p class="view__subtitle">Operational tools and execution console</p>
+      </div>
+      <div class="tool-grid" id="tool-grid">
+        <div class="card card--interactive tool-card" onclick="openTool('daily')"><span class="tool-card__icon"><i data-lucide="clipboard-list"></i></span><div class="tool-card__name">Daily Control</div><div class="tool-card__desc">Must-wins & blocks</div></div>
+        <div class="card card--interactive tool-card" onclick="openTool('email')"><span class="tool-card__icon"><i data-lucide="mail"></i></span><div class="tool-card__name">Email Intel</div><div class="tool-card__desc">Parse & extract</div></div>
+        <div class="card card--interactive tool-card" onclick="openTool('meeting')"><span class="tool-card__icon"><i data-lucide="users"></i></span><div class="tool-card__name">Meetings</div><div class="tool-card__desc">Notes & actions</div></div>
+        <div class="card card--interactive tool-card" onclick="openTool('audit')"><span class="tool-card__icon"><i data-lucide="target"></i></span><div class="tool-card__name">Audit</div><div class="tool-card__desc">Strategic review</div></div>
+        <div class="card card--interactive tool-card" onclick="openTool('reports')"><span class="tool-card__icon"><i data-lucide="bar-chart-3"></i></span><div class="tool-card__name">Reports</div><div class="tool-card__desc">Generate outputs</div></div>
+        <div class="card card--interactive tool-card" onclick="openTool('social')"><span class="tool-card__icon"><i data-lucide="share-2"></i></span><div class="tool-card__name">Social</div><div class="tool-card__desc">Content studio</div></div>
+      </div>
+      <div class="section-label">Active Work Items</div>
+      <div id="work-stream"></div>
+    </div>
+
+    <!-- PERSONAL VIEW -->
+    <div class="view" id="view-personal">
+      <div class="view__header">
+        <h1 class="view__title">Personal Stream</h1>
+        <p class="view__subtitle">Focus, routines, and reflection</p>
+        <div class="personal-header-actions">
+          <button class="btn btn--sm" onclick="openTool('routines')">Routines</button>
+          <button class="btn btn--sm" onclick="openRitual()">Close Day…</button>
+        </div>
+      </div>
+      <div id="energy-widget"></div>
+      <div id="personal-stream"></div>
+    </div>
+
+    <!-- TOOL VIEW -->
+    <div class="view" id="view-tool">
+      <div class="view__header">
+        <h1 class="view__title" id="tool-title">Tool</h1>
+        <p class="view__subtitle" id="tool-subtitle">—</p>
+      </div>
+      <div id="tool-content"></div>
+    </div>
+  </main>
+</div>
+
+<!-- FAB -->
+<button class="fab" id="fab" onclick="openSheet()"><span class="fab__icon">+</span>Capture</button>
+
+<!-- CAPTURE SHEET -->
+<div class="sheet-backdrop" id="sheet-backdrop" onclick="sheetBackdropClick(event)">
+  <div class="sheet">
+    <div class="sheet__handle"></div>
+    <div class="sheet__body">
+      <div class="sheet__title">Quick Capture</div>
+      <div class="auth-field">
+        <label class="auth-label">What needs to happen?</label>
+        <textarea class="input" id="cap-input" rows="3" placeholder="Type anything..."></textarea>
+      </div>
+      <div class="auth-field">
+        <label class="auth-label">Context</label>
+        <div style="display:flex;gap:8px">
+          <button class="pill pill--work" id="ctx-work" onclick="setCapCtx('work')">Work</button>
+          <button class="pill pill--personal" id="ctx-personal" onclick="setCapCtx('personal')">Personal</button>
+        </div>
+      </div>
+      <button class="btn btn--primary" style="width:100%;margin-top:16px" onclick="submitCapture()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- IN-APP CONFIRM DIALOG -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-dialog">
+    <div class="confirm-dialog__title" id="confirm-title">Are you sure?</div>
+    <div class="confirm-dialog__msg" id="confirm-msg"></div>
+    <div class="confirm-dialog__actions">
+      <button class="btn btn--sm" onclick="confirmResolve(false)">Cancel</button>
+      <button class="btn btn--danger btn--sm" id="confirm-ok" onclick="confirmResolve(true)">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- DAY CLOSURE RITUAL MODAL -->
+<div class="ritual-overlay" id="ritual-overlay" onclick="ritualBackdropClick(event)">
+  <div class="ritual-modal" id="ritual-modal">
+    <div class="ritual-modal__handle"></div>
+    <div class="ritual-modal__header">
+      <div class="ritual-modal__title" id="ritual-title">Close Day</div>
+      <button class="ritual-modal__close" onclick="closeRitual()">✕</button>
+    </div>
+    <div class="ritual-modal__body" id="ritual-body"></div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   STREAMOS PHASE 2 — TOOL REGISTRY ARCHITECTURE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Supabase Client ────────────────────────────────────────────────────── */
+const { createClient } = supabase;
+const SB = createClient(
+  'https://ityciofmpvqsqhonhxvd.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0eWNpb2ZtcHZxc3Fob25oeHZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0MzMwMDgsImV4cCI6MjA5MDAwOTAwOH0.Wnh0a1xPBogKuMdj3O658Tz7DCRnXpgE7Tapkq32Tj4',
+  { auth: { storage: window.localStorage, storageKey: 'sos-v3', autoRefreshToken: true, persistSession: true, detectSessionInUrl: true } }
+);
+
+/* ── Core State ─────────────────────────────────────────────────────────── */
+let STATE = 'booting';
+let USER = null;
+let items = [];
+let currentMode = 'work';
+let currentTool = null;
+let capCtx = 'work';
+let safeMode = false;
+
+/* ── Utilities ──────────────────────────────────────────────────────────── */
+const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const $ = id => document.getElementById(id);
+const todayStr = () => new Date().toISOString().slice(0, 10);
+const uid = () => 'id_' + Math.random().toString(36).slice(2, 11);
+
+// Lucide icon helper - returns SVG markup
+function icon(name, size = 16) {
+  return `<i data-lucide="${name}" style="width:${size}px;height:${size}px"></i>`;
+}
+
+// Refresh Lucide icons after DOM update
+function refreshIcons() {
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(`Timeout: ${label}`)), ms))
+  ]);
+}
+
+function isAuthErr(e) {
+  if (!e) return false;
+  const msg = ((e.message || '') + (e.code || '')).toLowerCase();
+  return /jwt|auth|expired|token|refresh|session|invalid.*claim|not authenticated/.test(msg);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LOCAL CACHE LAYER
+   ═══════════════════════════════════════════════════════════════════════════ */
+const CACHE_KEY = 'sos-items-cache';
+
+function loadLocal() {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      items = JSON.parse(cached);
+      render();
+      return true;
+    }
+  } catch (e) { console.warn('Cache read failed:', e); }
+  return false;
+}
+
+function saveLocal() {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(items));
+  } catch (e) { console.warn('Cache write failed:', e); }
+}
+
+function clearLocal() {
+  localStorage.removeItem(CACHE_KEY);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TOOL REGISTRY
+   ═══════════════════════════════════════════════════════════════════════════ */
+const TOOL_REGISTRY = {
+  /* ─────────────────────────────────────────────────────────────────────────
+     EMAIL INTEL TOOL
+     ───────────────────────────────────────────────────────────────────────── */
+  email: {
+    name: 'Email Intel',
+    desc: 'Parse emails for action items, deadlines, and draft replies',
+    state: { raw: '', parsed: null },
+    
+    render() {
+      const s = this.state;
+      return `
+        <div class="card" style="padding:20px">
+          <div class="field">
+            <label class="field__label">Paste Email Content</label>
+            <textarea class="input" id="email-raw" rows="8" placeholder="Paste the full email here...">${esc(s.raw)}</textarea>
+          </div>
+          <button class="btn btn--primary" onclick="TOOL_REGISTRY.email.parse()">Analyze Email</button>
+        </div>
+        <div id="email-output" class="tool-email__output">${s.parsed ? this.renderOutput() : ''}</div>
+      `;
+    },
+    
+    renderOutput() {
+      const p = this.state.parsed;
+      if (!p) return '';
+      return `
+        <div class="card" style="padding:20px">
+          ${p.actions.length ? `
+            <div class="tool-email__section">
+              <div class="tool-email__section-title">Action Items (${p.actions.length})</div>
+              <ul class="tool-email__list">
+                ${p.actions.map(a => `<li class="tool-email__list-item">${esc(a)}</li>`).join('')}
+              </ul>
+            </div>
+          ` : ''}
+          ${p.deadlines.length ? `
+            <div class="tool-email__section">
+              <div class="tool-email__section-title">Deadlines</div>
+              <ul class="tool-email__list">
+                ${p.deadlines.map(d => `<li class="tool-email__list-item tool-email__deadline">${esc(d)}</li>`).join('')}
+              </ul>
+            </div>
+          ` : ''}
+          <div class="tool-email__section">
+            <div class="tool-email__section-title">Draft Reply</div>
+            <div class="tool-email__draft" id="email-draft">${esc(p.draft)}</div>
+          </div>
+          <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap">
+            <button class="btn btn--sm" onclick="TOOL_REGISTRY.email.copyDraft()">Copy Draft</button>
+            <button class="btn btn--primary btn--sm" onclick="TOOL_REGISTRY.email.sendToStream()">Send to Stream</button>
+          </div>
+        </div>
+      `;
+    },
+    
+    parse() {
+      const raw = $('email-raw').value.trim();
+      if (!raw) { showToast('Paste email content first'); return; }
+      
+      this.state.raw = raw;
+      const lines = raw.split('\n');
+      
+      // Extract action items
+      const actionPatterns = [
+        /please\s+([\w\s]+)/gi,
+        /could you\s+([\w\s]+)/gi,
+        /need you to\s+([\w\s]+)/gi,
+        /action required[:\s]*(.*)/gi,
+        /to-?do[:\s]*(.*)/gi,
+        /follow up[:\s]*(.*)/gi,
+        /next steps?[:\s]*(.*)/gi,
+      ];
+      const actions = [];
+      lines.forEach(line => {
+        actionPatterns.forEach(pat => {
+          const matches = line.matchAll(pat);
+          for (const m of matches) {
+            if (m[1] && m[1].trim().length > 3) {
+              actions.push(m[1].trim().replace(/[.,!?]+$/, ''));
+            }
+          }
+        });
+        // Check for bullet points that might be tasks
+        if (/^[\s]*[-•*]\s*(.+)/.test(line)) {
+          const task = line.replace(/^[\s]*[-•*]\s*/, '').trim();
+          if (task.length > 5 && !actions.includes(task)) {
+            actions.push(task);
+          }
+        }
+      });
+      
+      // Extract deadlines
+      const deadlinePatterns = [
+        /by\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)/gi,
+        /by\s+(\d{1,2}[\/\-]\d{1,2}[\/\-]?\d{0,4})/gi,
+        /deadline[:\s]*([^\n]+)/gi,
+        /due[:\s]*([^\n]+)/gi,
+        /before\s+(end of day|eod|cob|monday|tuesday|wednesday|thursday|friday)/gi,
+        /(urgent|asap|immediately)/gi,
+      ];
+      const deadlines = [];
+      lines.forEach(line => {
+        deadlinePatterns.forEach(pat => {
+          const matches = line.matchAll(pat);
+          for (const m of matches) {
+            if (m[0] && !deadlines.includes(m[0])) {
+              deadlines.push(m[0].trim());
+            }
+          }
+        });
+      });
+      
+      // Generate draft reply
+      const senderMatch = raw.match(/from[:\s]*([^\n<]+)/i);
+      const sender = senderMatch ? senderMatch[1].trim().split(/[<\s]/)[0] : 'there';
+      
+      let draft = `Hi ${sender},\n\nThank you for your email.\n\n`;
+      if (actions.length) {
+        draft += `I've noted the following action items:\n${actions.map(a => `• ${a}`).join('\n')}\n\n`;
+      }
+      if (deadlines.length) {
+        draft += `I understand the timeline: ${deadlines[0]}.\n\n`;
+      }
+      draft += `I'll follow up shortly with updates.\n\nBest regards`;
+      
+      this.state.parsed = { actions: [...new Set(actions)].slice(0, 10), deadlines: [...new Set(deadlines)].slice(0, 5), draft };
+      $('email-output').innerHTML = this.renderOutput();
+    },
+    
+    copyDraft() {
+      if (!this.state.parsed) return;
+      navigator.clipboard.writeText(this.state.parsed.draft).then(() => showToast('Draft copied!')).catch(() => showToast('Copy failed'));
+    },
+    
+    async sendToStream() {
+      if (!this.state.parsed || !requireSession()) return;
+      
+      const item = {
+        type: 'email',
+        status: 'active',
+        context: 'work',
+        priority: this.state.parsed.deadlines.length ? 'high' : 'medium',
+        effort: 'medium',
+        node_type: 'item',
+        parent_id: null,
+        content: {
+          title: `Email: ${this.state.parsed.actions[0] || 'Process email'}`,
+          raw: this.state.raw.slice(0, 500),
+          actions: this.state.parsed.actions,
+          deadlines: this.state.parsed.deadlines,
+          draft: this.state.parsed.draft
+        },
+        created_at: new Date().toISOString()
+      };
+      
+      try {
+        const saved = await dbSave(item);
+        if (saved) {
+          saved.node_type = saved.node_type || 'item';
+          items.unshift(saved);
+          saveLocal();
+          render();
+          showToast('Added to stream');
+          this.state = { raw: '', parsed: null };
+          closeTool();
+        }
+      } catch (e) { showToast('Failed to save'); }
+    },
+    
+    init() { this.state = { raw: '', parsed: null }; }
+  },
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     MEETING ASSISTANT TOOL
+     ───────────────────────────────────────────────────────────────────────── */
+  meeting: {
+    name: 'Meeting Assistant',
+    desc: 'Capture notes and auto-extract action items in real-time',
+    state: { notes: '', actions: [], title: '' },
+    
+    render() {
+      const s = this.state;
+      return `
+        <div class="field">
+          <label class="field__label">Meeting Title</label>
+          <input class="input" id="meeting-title" value="${esc(s.title)}" placeholder="e.g., Weekly Sync, Project Kickoff" oninput="TOOL_REGISTRY.meeting.state.title=this.value">
+        </div>
+        <div class="tool-meeting__layout">
+          <div class="tool-meeting__panel">
+            <div class="tool-meeting__panel-title">${icon('file-text', 14)} Notes</div>
+            <textarea class="input" id="meeting-notes" rows="12" placeholder="Type notes here...&#10;&#10;Lines starting with [ ] or TODO become actions" oninput="TOOL_REGISTRY.meeting.parseNotes()">${esc(s.notes)}</textarea>
+          </div>
+          <div class="tool-meeting__panel">
+            <div class="tool-meeting__panel-title">${icon('check-square', 14)} Action Items (${s.actions.length})</div>
+            <div id="meeting-actions">
+              ${s.actions.length ? `
+                <ul class="tool-meeting__actions-list">
+                  ${s.actions.map((a, i) => `
+                    <li class="tool-meeting__action${a.done ? ' tool-meeting__action--done' : ''}">
+                      <div class="tool-meeting__action-check${a.done ? ' tool-meeting__action-check--done' : ''}" onclick="TOOL_REGISTRY.meeting.toggleAction(${i})">${a.done ? icon('check', 12) : ''}</div>
+                      <span class="tool-meeting__action-text">${esc(a.text)}</span>
+                    </li>
+                  `).join('')}
+                </ul>
+              ` : '<div class="tool-meeting__empty">Actions will appear here automatically</div>'}
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap">
+          <button class="btn btn--primary" onclick="TOOL_REGISTRY.meeting.saveMeeting()">Save Meeting</button>
+          <button class="btn btn--sm" onclick="TOOL_REGISTRY.meeting.exportActions()">Export Actions</button>
+          <button class="btn btn--sm" onclick="TOOL_REGISTRY.meeting.saveAsFlow()">Save as Flow</button>
+        </div>
+      `;
+    },
+    
+    parseNotes() {
+      const notes = $('meeting-notes').value;
+      this.state.notes = notes;
+      
+      const lines = notes.split('\n');
+      const newActions = [];
+      
+      lines.forEach(line => {
+        const trimmed = line.trim();
+        // Match [ ] checkbox pattern
+        if (/^\[\s*\]/.test(trimmed)) {
+          const text = trimmed.replace(/^\[\s*\]\s*/, '').trim();
+          if (text) newActions.push({ text, done: false, id: uid() });
+        }
+        // Match [x] completed pattern
+        else if (/^\[[xX✓]\]/.test(trimmed)) {
+          const text = trimmed.replace(/^\[[xX✓]\]\s*/, '').trim();
+          if (text) newActions.push({ text, done: true, id: uid() });
+        }
+        // Match TODO: pattern
+        else if (/^TODO[:\s]/i.test(trimmed)) {
+          const text = trimmed.replace(/^TODO[:\s]*/i, '').trim();
+          if (text) newActions.push({ text, done: false, id: uid() });
+        }
+        // Match ACTION: pattern
+        else if (/^ACTION[:\s]/i.test(trimmed)) {
+          const text = trimmed.replace(/^ACTION[:\s]*/i, '').trim();
+          if (text) newActions.push({ text, done: false, id: uid() });
+        }
+      });
+      
+      // Preserve done state from existing actions
+      newActions.forEach(na => {
+        const existing = this.state.actions.find(a => a.text === na.text);
+        if (existing) na.done = existing.done;
+      });
+      
+      this.state.actions = newActions;
+      this.renderActions();
+    },
+    
+    renderActions() {
+      const container = $('meeting-actions');
+      if (!container) return;
+      
+      if (!this.state.actions.length) {
+        container.innerHTML = '<div class="tool-meeting__empty">Actions will appear here automatically</div>';
+        return;
+      }
+      
+      container.innerHTML = `
+        <ul class="tool-meeting__actions-list">
+          ${this.state.actions.map((a, i) => `
+            <li class="tool-meeting__action${a.done ? ' tool-meeting__action--done' : ''}">
+              <div class="tool-meeting__action-check${a.done ? ' tool-meeting__action-check--done' : ''}" onclick="TOOL_REGISTRY.meeting.toggleAction(${i})">${a.done ? icon('check', 12) : ''}</div>
+              <span class="tool-meeting__action-text">${esc(a.text)}</span>
+            </li>
+          `).join('')}
+        </ul>
+      `;
+      refreshIcons();
+    },
+    
+    toggleAction(idx) {
+      if (this.state.actions[idx]) {
+        this.state.actions[idx].done = !this.state.actions[idx].done;
+        this.renderActions();
+      }
+    },
+    
+    async saveMeeting() {
+      if (!requireSession()) return;
+      
+      const title = this.state.title.trim() || `Meeting ${todayStr()}`;
+      
+      const item = {
+        type: 'meeting',
+        status: 'active',
+        context: 'work',
+        priority: 'medium',
+        effort: 'low',
+        node_type: 'item',
+        parent_id: null,
+        content: {
+          title: title,
+          notes: this.state.notes,
+          actions: this.state.actions,
+          date: todayStr()
+        },
+        created_at: new Date().toISOString()
+      };
+      
+      try {
+        const saved = await dbSave(item);
+        if (saved) {
+          saved.node_type = saved.node_type || 'item';
+          items.unshift(saved);
+          saveLocal();
+          render();
+          showToast('Meeting saved');
+          this.state = { notes: '', actions: [], title: '' };
+          closeTool();
+        }
+      } catch (e) { showToast('Failed to save'); }
+    },
+    
+    exportActions() {
+      if (!this.state.actions.length) { showToast('No actions to export'); return; }
+      const text = this.state.actions.map(a => `${a.done ? '[x]' : '[ ]'} ${a.text}`).join('\n');
+      navigator.clipboard.writeText(text).then(() => showToast('Actions copied!')).catch(() => showToast('Copy failed'));
+    },
+
+    async saveAsFlow() {
+      if (!this.state.actions.length) { showToast('Add actions first (use [ ] syntax)'); return; }
+      const title = this.state.title.trim() || `Meeting Flow ${todayStr()}`;
+      const steps = this.state.actions.map(a => a.text);
+      await saveFlow(title, steps, 'work');
+      this.state = { notes: '', actions: [], title: '' };
+      closeTool();
+    },
+    
+    init() { this.state = { notes: '', actions: [], title: '' }; }
+  },
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     STRATEGIC AUDIT TOOL
+     ───────────────────────────────────────────────────────────────────────── */
+  audit: {
+    name: 'Strategic Audit',
+    desc: '3-step decision framework',
+    state: { step: 0, answers: {}, decision: '' },
+    
+    questions: [
+      // Step 0: Discovery
+      { step: 0, id: 'situation', q: 'What is the situation or decision you are facing?', hint: 'Describe it in one or two sentences.' },
+      { step: 0, id: 'stakes', q: 'What are the stakes? What happens if you do nothing?', hint: 'Consider both upside and downside.' },
+      { step: 0, id: 'constraints', q: 'What constraints are you working with?', hint: 'Time, budget, resources, dependencies.' },
+      // Step 1: Diagnosis
+      { step: 1, id: 'root', q: 'What is the root cause or core tension?', hint: 'Go beyond symptoms to the underlying issue.' },
+      { step: 1, id: 'options', q: 'What are your realistic options? List 2-4.', hint: 'Include "do nothing" if it is valid.' },
+      { step: 1, id: 'tradeoffs', q: 'What are the key tradeoffs between options?', hint: 'What do you gain and lose with each?' },
+      // Step 2: Forced Choice
+      { step: 2, id: 'choice', q: 'If you had to decide RIGHT NOW, what would you choose?', hint: 'Trust your gut. You can refine later.' },
+      { step: 2, id: 'commitment', q: 'What is the first action you will take to commit?', hint: 'Make it concrete and time-bound.' },
+    ],
+    
+    render() {
+      const s = this.state;
+      const stepNames = ['Discovery', 'Diagnosis', 'Forced Choice'];
+      const currentQuestions = this.questions.filter(q => q.step === s.step);
+      
+      return `
+        <div class="tool-audit__progress">
+          ${[0, 1, 2].map(i => `<div class="tool-audit__step${i < s.step ? ' tool-audit__step--done' : (i === s.step ? ' tool-audit__step--active' : '')}"></div>`).join('')}
+        </div>
+        <div class="tool-audit__step-labels">
+          ${stepNames.map((name, i) => `<span class="tool-audit__step-label${i < s.step ? ' tool-audit__step-label--done' : (i === s.step ? ' tool-audit__step-label--active' : '')}">${name}</span>`).join('')}
+        </div>
+        
+        <div class="card" style="padding:24px">
+          ${s.step < 3 ? currentQuestions.map(q => `
+            <div class="field">
+              <div class="tool-audit__question">${q.q}</div>
+              <div class="tool-audit__hint">${q.hint}</div>
+              <textarea class="input" id="audit-${q.id}" rows="3" placeholder="Your answer...">${esc(s.answers[q.id] || '')}</textarea>
+            </div>
+          `).join('') : this.renderSummary()}
+          
+          <div class="tool-audit__nav">
+            ${s.step > 0 ? `<button class="btn btn--sm" onclick="TOOL_REGISTRY.audit.prevStep()">${icon('arrow-left', 14)} Back</button>` : ''}
+            ${s.step < 2 ? `<button class="btn btn--primary" onclick="TOOL_REGISTRY.audit.nextStep()">Continue ${icon('arrow-right', 14)}</button>` : ''}
+            ${s.step === 2 ? `<button class="btn btn--primary" onclick="TOOL_REGISTRY.audit.complete()">Complete Audit</button>` : ''}
+            ${s.step === 3 ? `<button class="btn btn--success" onclick="TOOL_REGISTRY.audit.saveAudit()">${icon('save', 14)} Save Decision</button>` : ''}
+          </div>
+        </div>
+      `;
+    },
+    
+    renderSummary() {
+      const a = this.state.answers;
+      return `
+        <div class="tool-audit__summary">
+          <div class="tool-audit__summary-title">Audit Summary</div>
+          <div class="tool-audit__summary-item"><strong>Situation:</strong> ${esc(a.situation || '—')}</div>
+          <div class="tool-audit__summary-item"><strong>Stakes:</strong> ${esc(a.stakes || '—')}</div>
+          <div class="tool-audit__summary-item"><strong>Root Cause:</strong> ${esc(a.root || '—')}</div>
+          <div class="tool-audit__summary-item"><strong>Options:</strong> ${esc(a.options || '—')}</div>
+          <div class="tool-audit__summary-item"><strong>Tradeoffs:</strong> ${esc(a.tradeoffs || '—')}</div>
+        </div>
+        <div class="tool-audit__decision">
+          DECISION: ${esc(a.choice || '—')}
+        </div>
+        <div class="tool-audit__summary" style="margin-top:12px">
+          <div class="tool-audit__summary-item"><strong>First Action:</strong> ${esc(a.commitment || '—')}</div>
+        </div>
+      `;
+    },
+    
+    saveAnswers() {
+      const currentQuestions = this.questions.filter(q => q.step === this.state.step);
+      currentQuestions.forEach(q => {
+        const el = $(`audit-${q.id}`);
+        if (el) this.state.answers[q.id] = el.value;
+      });
+    },
+    
+    nextStep() {
+      this.saveAnswers();
+      if (this.state.step < 2) {
+        this.state.step++;
+        this.rerender();
+      }
+    },
+    
+    prevStep() {
+      this.saveAnswers();
+      if (this.state.step > 0) {
+        this.state.step--;
+        this.rerender();
+      }
+    },
+    
+    complete() {
+      this.saveAnswers();
+      this.state.step = 3;
+      this.rerender();
+    },
+    
+    rerender() {
+      $('tool-content').innerHTML = this.render();
+    },
+    
+    async saveAudit() {
+      if (!requireSession()) return;
+      
+      const a = this.state.answers;
+      const item = {
+        type: 'audit',
+        status: 'active',
+        context: 'work',
+        priority: 'high',
+        effort: 'high',
+        node_type: 'item',
+        parent_id: null,
+        pinned: true,
+        content: {
+          title: `Decision: ${(a.situation || 'Strategic audit').slice(0, 50)}`,
+          situation: a.situation,
+          stakes: a.stakes,
+          constraints: a.constraints,
+          root: a.root,
+          options: a.options,
+          tradeoffs: a.tradeoffs,
+          choice: a.choice,
+          commitment: a.commitment,
+          date: todayStr()
+        },
+        created_at: new Date().toISOString()
+      };
+      
+      try {
+        const saved = await dbSave(item);
+        if (saved) {
+          saved.node_type = saved.node_type || 'item';
+          items.unshift(saved);
+          saveLocal();
+          render();
+          showToast('Audit saved & pinned');
+          this.state = { step: 0, answers: {}, decision: '' };
+          closeTool();
+        }
+      } catch (e) { showToast('Failed to save'); }
+    },
+    
+    init() { this.state = { step: 0, answers: {}, decision: '' }; }
+  },
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     ROUTINE ENGINE TOOL
+     ───────────────────────────────────────────────────────────────────────── */
+  routines: {
+    name: 'Routine Engine',
+    desc: 'Build and track daily anchors',
+    state: { newTitle: '', anchor: 'morning', cadence: 'daily', addOpen: false },
+
+    render() {
+      const s = this.state;
+      const routines = getRoutines();
+      const byAnchor = { morning: [], afternoon: [], evening: [], anytime: [] };
+      routines.forEach(r => {
+        const a = r.content?.anchor || 'anytime';
+        if (byAnchor[a]) byAnchor[a].push(r); else byAnchor.anytime.push(r);
+      });
+
+      const anchorLabels = { morning: 'Morning', afternoon: 'Afternoon', evening: 'Evening', anytime: 'Anytime' };
+      const anchorIcons = { morning: '🌅', afternoon: '☀️', evening: '🌙', anytime: '♾️' };
+
+      let html = '';
+
+      // Energy rec banner
+      const e = getEnergy();
+      if (e && e <= 2 && routines.length) {
+        html += `<div class="card" style="padding:12px 16px;background:var(--warning-bg);border-color:var(--warning);margin-bottom:16px;font-size:12px">
+          <strong>Low energy day.</strong> Honour your non-negotiables. Let the rest wait.
+        </div>`;
+      }
+
+      // Add routine form
+      html += `
+        <div class="card" style="margin-bottom:20px;overflow:hidden">
+          <div style="padding:14px 16px;border-bottom:var(--pp-border);cursor:pointer;display:flex;align-items:center;justify-content:space-between" onclick="TOOL_REGISTRY.routines.toggleAdd()">
+            <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px">+ Add Routine</span>
+            <span style="color:var(--text-muted)">${s.addOpen ? '▲' : '▼'}</span>
+          </div>
+          ${s.addOpen ? `
+          <div style="padding:16px">
+            <div class="field">
+              <label class="field__label">Routine Name</label>
+              <input class="input" id="routine-title" value="${esc(s.newTitle)}" placeholder="e.g., Morning pages, 20 min walk…" oninput="TOOL_REGISTRY.routines.state.newTitle=this.value">
+            </div>
+            <div class="field">
+              <label class="field__label">Anchor</label>
+              <div class="anchor-pills">
+                ${['morning','afternoon','evening','anytime'].map(a => `
+                  <button class="anchor-pill${s.anchor === a ? ' anchor-pill--active' : ''}" onclick="TOOL_REGISTRY.routines.setAnchor('${a}')">${anchorIcons[a]} ${anchorLabels[a]}</button>
+                `).join('')}
+              </div>
+            </div>
+            <button class="btn btn--primary btn--sm" onclick="TOOL_REGISTRY.routines.saveNew()">Add Routine</button>
+          </div>` : ''}
+        </div>
+      `;
+
+      // Render by anchor group
+      let hasAny = false;
+      ['morning','afternoon','evening','anytime'].forEach(anchor => {
+        const group = byAnchor[anchor];
+        if (!group.length) return;
+        hasAny = true;
+        html += `<div class="section-label">${anchorIcons[anchor]} ${anchorLabels[anchor]}</div>`;
+        html += `<div class="routine-list">`;
+        group.forEach(r => {
+          const done = isRoutineDoneToday(r);
+          const streak = r.content?.streak || 0;
+          html += `
+            <div class="routine-card${done ? ' routine-card--done' : ''}">
+              <div class="routine-card__check${done ? ' routine-card__check--done' : ''}" onclick="${done ? '' : `completeRoutine('${r.id}')`}">
+                ${done ? `<i data-lucide="check" style="width:14px;height:14px"></i>` : ''}
+              </div>
+              <div class="routine-card__body">
+                <div class="routine-card__title">${esc(r.content?.title || 'Routine')}</div>
+                <div class="routine-card__meta">
+                  <span>${anchorIcons[anchor]} ${anchorLabels[anchor]}</span>
+                  ${streak > 0 ? `<span class="routine-card__streak">🔥 ${streak} day${streak > 1 ? 's' : ''}</span>` : ''}
+                  ${done ? `<span style="color:var(--success)">✓ Done today</span>` : ''}
+                </div>
+              </div>
+              <button class="routine-card__delete" onclick="deleteRoutine('${r.id}')" title="Remove">✕</button>
+            </div>
+          `;
+        });
+        html += `</div>`;
+      });
+
+      if (!hasAny) {
+        html += `
+          <div class="card">
+            <div class="empty-state">
+              <svg class="empty-state__svg" width="80" height="64" viewBox="0 0 80 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="8" y="16" width="28" height="28" fill="var(--mode-accent)" fill-opacity="0.3" stroke="var(--border-color)" stroke-width="2"/>
+                <rect x="20" y="4" width="28" height="28" fill="var(--surface)" stroke="var(--border-color)" stroke-width="2"/>
+                <rect x="32" y="20" width="28" height="28" fill="var(--surface-2)" stroke="var(--border-color)" stroke-width="2"/>
+                <line x1="20" y1="14" x2="48" y2="14" stroke="var(--border-color)" stroke-width="2"/>
+                <line x1="8" y1="26" x2="20" y2="14" stroke="var(--border-color)" stroke-width="2"/>
+                <line x1="60" y1="30" x2="48" y2="18" stroke="var(--border-color)" stroke-width="2"/>
+              </svg>
+              <div class="empty-state__title">No Routines Yet</div>
+              <div class="empty-state__text">Add your first routine above. Anchor it to a time of day to build a reliable sequence.</div>
+            </div>
+          </div>
+        `;
+      }
+
+      return html;
+    },
+
+    toggleAdd() {
+      this.state.addOpen = !this.state.addOpen;
+      renderRoutineTool();
+    },
+
+    setAnchor(anchor) {
+      this.state.anchor = anchor;
+      renderRoutineTool();
+    },
+
+    async saveNew() {
+      const title = ($('routine-title')?.value || this.state.newTitle).trim();
+      await addRoutine(title, this.state.anchor, this.state.cadence);
+      this.state.newTitle = '';
+      this.state.addOpen = false;
+    },
+
+    init() { this.state = { newTitle: '', anchor: 'morning', cadence: 'daily', addOpen: false }; }
+  },
+  daily: {
+    name: 'Daily Control',
+    desc: 'Must-wins and time blocks for today',
+    render() {
+      return `<div class="card" style="padding:40px;text-align:center">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin:0 auto 16px;display:block;opacity:0.6">
+          <rect x="8" y="12" width="48" height="40" fill="var(--surface-2)" stroke="var(--border-color)" stroke-width="2"/>
+          <rect x="8" y="4" width="48" height="14" fill="var(--mode-accent)" fill-opacity="0.5" stroke="var(--border-color)" stroke-width="2"/>
+          <line x1="20" y1="8" x2="20" y2="18" stroke="var(--border-color)" stroke-width="2"/>
+          <line x1="44" y1="8" x2="44" y2="18" stroke="var(--border-color)" stroke-width="2"/>
+          <rect x="16" y="26" width="12" height="8" fill="var(--mode-accent)" fill-opacity="0.7" stroke="var(--border-color)" stroke-width="2"/>
+          <rect x="36" y="26" width="12" height="8" fill="var(--surface-3)" stroke="var(--border-color)" stroke-width="2"/>
+          <rect x="16" y="38" width="12" height="8" fill="var(--surface-3)" stroke="var(--border-color)" stroke-width="2"/>
+        </svg>
+        <div style="font-size:14px;font-weight:600;margin-bottom:8px">Coming in Phase 4</div>
+        <div style="font-size:12px;color:var(--text-secondary)">Daily planning, time blocking, must-wins.</div>
+        <button class="btn btn--sm" style="margin-top:24px" onclick="closeTool()">← Back</button>
+      </div>`;
+    },
+    init() {}
+  },
+
+  reports: {
+    name: 'Reports',
+    desc: 'Generate structured reports and outputs',
+    render() {
+      return `<div class="card" style="padding:40px;text-align:center">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin:0 auto 16px;display:block;opacity:0.6">
+          <rect x="12" y="8" width="40" height="48" fill="var(--surface)" stroke="var(--border-color)" stroke-width="2"/>
+          <rect x="12" y="8" width="40" height="10" fill="var(--mode-accent)" fill-opacity="0.5" stroke="var(--border-color)" stroke-width="2"/>
+          <line x1="20" y1="26" x2="44" y2="26" stroke="var(--border-color)" stroke-width="2"/>
+          <line x1="20" y1="34" x2="44" y2="34" stroke="var(--border-color)" stroke-width="2"/>
+          <line x1="20" y1="42" x2="36" y2="42" stroke="var(--border-color)" stroke-width="2"/>
+        </svg>
+        <div style="font-size:14px;font-weight:600;margin-bottom:8px">Coming in Phase 4</div>
+        <div style="font-size:12px;color:var(--text-secondary)">Weekly summaries, donor reports, performance exports.</div>
+        <button class="btn btn--sm" style="margin-top:24px" onclick="closeTool()">← Back</button>
+      </div>`;
+    },
+    init() {}
+  },
+
+  social: {
+    name: 'Social Studio',
+    desc: 'Content creation and scheduling',
+    render() {
+      return `<div class="card" style="padding:40px;text-align:center">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin:0 auto 16px;display:block;opacity:0.6">
+          <circle cx="14" cy="32" r="8" fill="var(--mode-accent)" fill-opacity="0.5" stroke="var(--border-color)" stroke-width="2"/>
+          <circle cx="50" cy="14" r="8" fill="var(--surface-2)" stroke="var(--border-color)" stroke-width="2"/>
+          <circle cx="50" cy="50" r="8" fill="var(--surface-2)" stroke="var(--border-color)" stroke-width="2"/>
+          <line x1="22" y1="28" x2="42" y2="18" stroke="var(--border-color)" stroke-width="2"/>
+          <line x1="22" y1="36" x2="42" y2="46" stroke="var(--border-color)" stroke-width="2"/>
+        </svg>
+        <div style="font-size:14px;font-weight:600;margin-bottom:8px">Coming in Phase 4</div>
+        <div style="font-size:12px;color:var(--text-secondary)">Facebook posts, campaigns, SPCA content calendar.</div>
+        <button class="btn btn--sm" style="margin-top:24px" onclick="closeTool()">← Back</button>
+      </div>`;
+    },
+    init() {}
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MODE SYSTEM
+   ═══════════════════════════════════════════════════════════════════════════ */
+function initMode() {
+  const saved = localStorage.getItem('sos-mode');
+  currentMode = saved === 'personal' ? 'personal' : 'work';
+  applyMode();
+}
+
+function setMode(mode) {
+  currentMode = mode;
+  localStorage.setItem('sos-mode', mode);
+  applyMode();
+  renderBreadcrumb();
+  render();
+}
+
+function applyMode() {
+  document.documentElement.setAttribute('data-mode', currentMode);
+  document.querySelectorAll('.mode-toggle__btn').forEach(btn => {
+    btn.classList.toggle('mode-toggle__btn--active', btn.dataset.mode === currentMode);
+  });
+  capCtx = currentMode;
+  updateCapCtxPills();
+}
+
+function updateCapCtxPills() {
+  $('ctx-work')?.classList.toggle('pill--active', capCtx === 'work');
+  $('ctx-personal')?.classList.toggle('pill--active', capCtx === 'personal');
+}
+
+function setCapCtx(ctx) {
+  capCtx = ctx;
+  updateCapCtxPills();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STATE MACHINE
+   ═══════════════════════════════════════════════════════════════════════════ */
+function applyState(newState, msg) {
+  STATE = newState;
+  const syncDot = $('sync-dot');
+  const syncLabel = $('sync-label');
+  const fab = $('fab');
+  const sessionBanner = $('session-banner');
+  
+  if (syncDot) {
+    syncDot.className = 'topbar__sync';
+    if (newState === 'saving') syncDot.classList.add('topbar__sync--saving');
+    else if (newState === 'error' || newState === 'session_expired') syncDot.classList.add('topbar__sync--error');
+    else if (newState === 'reconnecting') syncDot.classList.add('topbar__sync--saving');
+    else if (safeMode) syncDot.classList.add('topbar__sync--offline');
+  }
+  
+  if (syncLabel) {
+    const labels = { ready: safeMode ? 'Offline' : 'Synced', saving: 'Saving...', reconnecting: 'Reconnecting...', session_expired: 'Session expired', error: 'Error' };
+    syncLabel.textContent = labels[newState] || newState;
+  }
+  
+  const locked = newState === 'session_expired' || newState === 'error' || newState === 'reconnecting';
+  if (fab) fab.disabled = locked;
+  
+  if (sessionBanner) {
+    const showBanner = newState === 'session_expired' || newState === 'error';
+    sessionBanner.classList.toggle('show', showBanner);
+    if (showBanner && msg) $('session-msg').textContent = msg;
+  }
+  
+  if (newState === 'saving') {
+    setTimeout(() => { if (STATE === 'saving') applyState('ready'); }, 4000);
+  }
+}
+
+function requireSession() {
+  if (!USER || STATE === 'session_expired' || STATE === 'error') {
+    applyState('session_expired', 'Session lost.');
+    return false;
+  }
+  return true;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BOOT & AUTH
+   ═══════════════════════════════════════════════════════════════════════════ */
+function bootStatus(msg) {
+  $('boot').classList.remove('off');
+  $('boot-status').textContent = msg;
+  $('boot-err').classList.remove('show');
+}
+
+function bootError(msg) {
+  $('boot-status').style.display = 'none';
+  $('boot-err').classList.add('show');
+  $('boot-err-msg').textContent = msg;
+}
+
+function hideBoot() { $('boot').classList.add('off'); }
+
+async function bootstrap() {
+  applyState('booting');
+  bootStatus('Initializing...');
+  initMode();
+  
+  // Load local cache first
+  loadLocal();
+  
+  try {
+    const { data: { session }, error } = await withTimeout(SB.auth.getSession(), 8000, 'getSession');
+    if (error) throw error;
+    
+    if (session?.user) {
+      USER = session.user;
+      showApp();
+      bootStatus('Syncing...');
+      await loadItems();
+      hideBoot();
+      applyState('ready');
+    } else {
+      hideBoot();
+      showAuth();
+    }
+  } catch (e) {
+    console.error('Bootstrap error:', e);
+    if (items.length) {
+      // We have cached data, go to safe mode
+      safeMode = true;
+      $('safe-banner').classList.add('show');
+      USER = { id: 'offline' };
+      showApp();
+      hideBoot();
+      applyState('ready');
+    } else {
+      bootError(e.message.includes('Timeout') ? 'Connection timed out.' : (e.message || 'Could not connect.'));
+      applyState('error', e.message);
+    }
+  }
+}
+
+async function retryBoot() {
+  bootStatus('Retrying...');
+  safeMode = false;
+  $('safe-banner').classList.remove('show');
+  await bootstrap();
+}
+
+SB.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'INITIAL_SESSION') return;
+  if (event === 'SIGNED_IN' && session?.user && !USER) {
+    USER = session.user;
+    showApp();
+    await loadItems();
+    hideBoot();
+    applyState('ready');
+  } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+    USER = session.user;
+    if (STATE === 'session_expired' || STATE === 'reconnecting') applyState('ready');
+  } else if (event === 'SIGNED_OUT') {
+    USER = null;
+    items = [];
+    clearLocal();
+    hideBoot();
+    showAuth();
+    applyState('ready');
+  }
+});
+
+function showApp() {
+  $('auth').classList.remove('show');
+  $('app').classList.add('show');
+  if (USER && USER.email) {
+    $('profile-name').textContent = USER.email.split('@')[0];
+    $('profile-email').textContent = USER.email;
+  }
+  renderBreadcrumb();
+  render();
+}
+
+function showAuth() {
+  $('app').classList.remove('show');
+  $('auth').classList.add('show');
+}
+
+function showPwForm() { $('auth-magic').style.display = 'none'; $('auth-pw').style.display = 'block'; setAuthMsg(''); }
+function showMagicForm() { $('auth-pw').style.display = 'none'; $('auth-magic').style.display = 'block'; setAuthMsg(''); }
+function setAuthMsg(msg, type = '') { const el = $('auth-msg'); el.textContent = msg; el.className = 'auth-msg' + (type ? ` auth-msg--${type}` : ''); }
+
+async function sendMagicLink() {
+  const email = $('auth-email').value.trim();
+  if (!email) { setAuthMsg('Please enter your email.', 'err'); return; }
+  const { error } = await SB.auth.signInWithOtp({ email, options: { emailRedirectTo: location.href } });
+  if (error) setAuthMsg(error.message, 'err');
+  else setAuthMsg('Magic link sent — check your inbox.', 'ok');
+}
+
+async function signInPw() {
+  const email = $('pw-email').value.trim();
+  const pw = $('pw-pass').value;
+  if (!email || !pw) { setAuthMsg('Enter email and password.', 'err'); return; }
+  const { error } = await SB.auth.signInWithPassword({ email, password: pw });
+  if (error) setAuthMsg(error.message, 'err');
+}
+
+async function signOut() {
+  try { await SB.auth.signOut(); } catch (e) {}
+  USER = null;
+  items = [];
+  clearLocal();
+  localStorage.removeItem('sos-v3');
+  hideBoot();
+  showAuth();
+  applyState('ready');
+  $('auth-msg').textContent = '';
+  closeProfileMenu();
+}
+
+async function handleReconnect() {
+  applyState('reconnecting', 'Reconnecting...');
+  try {
+    const { data, error } = await withTimeout(SB.auth.refreshSession(), 8000, 'refresh');
+    if (error || !data.session) throw new Error('Failed to reconnect');
+    USER = data.session.user;
+    safeMode = false;
+    $('safe-banner').classList.remove('show');
+    applyState('ready');
+    await loadItems();
+  } catch (e) {
+    USER = null;
+    applyState('session_expired', 'Could not reconnect.');
+  }
+}
+
+function toggleProfileMenu() { $('profile-menu').classList.toggle('open'); }
+function closeProfileMenu() { $('profile-menu').classList.remove('open'); }
+document.addEventListener('click', e => { if (!e.target.closest('#profile-btn') && !e.target.closest('#profile-menu')) closeProfileMenu(); });
+
+function enterDemoMode() {
+  safeMode = true;
+  USER = { id: 'demo', email: 'demo@local' };
+  $('safe-banner').classList.add('show');
+  loadLocal();
+  showApp();
+  hideBoot();
+  applyState('ready');
+  showToast('Demo mode active');
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DATA LAYER
+   ═══════════════════════════════════════════════════════════════════════════ */
+async function loadItems() {
+  if (!USER || safeMode) return;
+  try {
+    const { data, error } = await withTimeout(
+      SB.from('stream_items').select('*').eq('user_id', USER.id).order('created_at', { ascending: false }),
+      15000, 'loadItems'
+    );
+    if (error) throw error;
+    items = data || [];
+    saveLocal();
+    render();
+  } catch (e) {
+    console.error('Load error:', e);
+    if (isAuthErr(e)) { USER = null; applyState('session_expired', 'Session expired.'); }
+    else { applyState('error', 'Could not load data.'); }
+  }
+}
+
+async function dbSave(item) {
+  if (safeMode) {
+    // Save locally only
+    const localItem = { ...item, id: uid(), user_id: 'offline' };
+    items.unshift(localItem);
+    saveLocal();
+    render();
+    return localItem;
+  }
+  if (!requireSession()) throw new Error('no_session');
+  applyState('saving');
+  try {
+    const { data, error } = await withTimeout(
+      SB.from('stream_items').insert({ ...item, user_id: USER.id }).select().single(),
+      10000, 'save'
+    );
+    if (error) throw error;
+    saveLocal();
+    applyState('ready');
+    return data;
+  } catch (e) {
+    if (isAuthErr(e)) { USER = null; applyState('session_expired', 'Session expired.'); }
+    else { applyState('error', 'Save failed.'); }
+    throw e;
+  }
+}
+
+async function dbUpdate(id, patch) {
+  if (safeMode) {
+    const idx = items.findIndex(i => i.id === id);
+    if (idx >= 0) { Object.assign(items[idx], patch); saveLocal(); render(); }
+    return;
+  }
+  if (!requireSession()) throw new Error('no_session');
+  applyState('saving');
+  try {
+    const { error } = await withTimeout(
+      SB.from('stream_items').update(patch).eq('id', id).eq('user_id', USER.id),
+      10000, 'update'
+    );
+    if (error) throw error;
+    saveLocal();
+    applyState('ready');
+  } catch (e) {
+    if (isAuthErr(e)) { USER = null; applyState('session_expired', 'Session expired.'); }
+    else { applyState('error', 'Update failed.'); }
+    throw e;
+  }
+}
+
+async function dbDelete(id) {
+  if (safeMode) {
+    items = items.filter(i => i.id !== id);
+    saveLocal();
+    render();
+    return;
+  }
+  if (!requireSession()) throw new Error('no_session');
+  applyState('saving');
+  try {
+    const { error } = await withTimeout(
+      SB.from('stream_items').delete().eq('id', id).eq('user_id', USER.id),
+      10000, 'delete'
+    );
+    if (error) throw error;
+    items = items.filter(i => i.id !== id);
+    saveLocal();
+    applyState('ready');
+  } catch (e) {
+    if (isAuthErr(e)) { USER = null; applyState('session_expired', 'Session expired.'); }
+    else { applyState('error', 'Delete failed.'); }
+    throw e;
+  }
+}
+
+async function deleteItem(id) {
+  const ok = await showConfirm('This item will be permanently removed.', 'Delete Item?', 'Delete');
+  if (!ok) return;
+  try {
+    await dbDelete(id);
+    showToast('Deleted');
+    render();
+  } catch (e) { showToast('Delete failed'); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RENDERING
+   ═══════════════════════════════════════════════════════════════════════════ */
+function render() {
+  $('view-work').classList.toggle('show', currentMode === 'work' && !currentTool);
+  $('view-personal').classList.toggle('show', currentMode === 'personal' && !currentTool);
+  $('view-tool').classList.toggle('show', !!currentTool);
+
+  if (currentMode === 'work' && !currentTool) renderWorkStream();
+  else if (currentMode === 'personal' && !currentTool) {
+    renderEnergyWidget();
+    renderPersonalStream();
+  }
+}
+
+function renderBreadcrumb() {
+  const crumb = $('breadcrumb');
+  if (!crumb) return;
+  
+  let segs = [];
+  if (currentTool) {
+    const tool = TOOL_REGISTRY[currentTool];
+    segs.push({ label: 'WORK', clickable: true, action: () => closeTool() });
+    segs.push({ label: 'TOOLS', clickable: true, action: () => closeTool() });
+    segs.push({ label: (tool?.name || currentTool).toUpperCase(), current: true });
+  } else {
+    segs.push({ label: currentMode === 'work' ? 'WORK' : 'PERSONAL', current: true });
+  }
+  
+  crumb.innerHTML = segs.map((seg, i) => {
+    const sep = i > 0 ? '<span class="breadcrumb-bar__sep">/</span>' : '';
+    const cls = ['breadcrumb-bar__seg'];
+    if (seg.clickable) cls.push('breadcrumb-bar__seg--clickable');
+    if (seg.current) cls.push('breadcrumb-bar__seg--current');
+    return `${sep}<span class="${cls.join(' ')}" data-idx="${i}">${seg.label}</span>`;
+  }).join('');
+  
+  crumb.querySelectorAll('.breadcrumb-bar__seg--clickable').forEach(el => {
+    const idx = parseInt(el.dataset.idx);
+    el.onclick = () => segs[idx]?.action?.();
+  });
+}
+
+function renderWorkStream() {
+  const container = $('work-stream');
+  if (!container) return;
+
+  const workItems = items.filter(i => i.context === 'work' && i.status === 'active' && i.node_type !== 'folder' && i.node_type !== 'flow');
+  const workFlows = items.filter(i => i.context === 'work' && i.status === 'active' && i.node_type === 'flow');
+  const pinned = workItems.filter(i => i.pinned);
+  const regular = workItems.filter(i => !i.pinned).slice(0, 10);
+
+  let html = '';
+
+  // Flows section
+  if (workFlows.length) {
+    html += `<div class="section-label">Active Flows</div>`;
+    workFlows.forEach(f => { html += renderFlowCard(f); });
+  }
+
+  if (!workItems.length && !workFlows.length) {
+    html = `<div class="card"><div class="empty-state empty-state--work">
+      <svg class="empty-state__svg" width="96" height="72" viewBox="0 0 96 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="4" y="24" width="40" height="36" fill="var(--surface-2)" stroke="var(--border-color)" stroke-width="2"/>
+        <rect x="24" y="8" width="40" height="36" fill="var(--surface)" stroke="var(--border-color)" stroke-width="2"/>
+        <rect x="52" y="28" width="40" height="36" fill="var(--mode-accent)" fill-opacity="0.2" stroke="var(--border-color)" stroke-width="2"/>
+        <line x1="24" y1="8" x2="4" y2="24" stroke="var(--border-color)" stroke-width="2"/>
+        <line x1="64" y1="8" x2="92" y2="28" stroke="var(--border-color)" stroke-width="2"/>
+        <line x1="64" y1="8" x2="24" y2="8" stroke="var(--border-color)" stroke-width="2"/>
+        <line x1="4" y1="24" x2="52" y2="28" stroke="var(--border-light)" stroke-width="1" stroke-dasharray="4 4"/>
+      </svg>
+      <div class="empty-state__title">Inbox Clear</div>
+      <div class="empty-state__text">No active work items. Use the tools above to process emails, meetings, or decisions.</div>
+    </div></div>`;
+    container.innerHTML = html;
+    refreshIcons();
+    return;
+  }
+
+  if (workItems.length) {
+    html += `<div class="stream-group">${[...pinned, ...regular].map(item => renderStreamItem(item)).join('')}</div>`;
+  }
+
+  container.innerHTML = html;
+  refreshIcons();
+}
+
+function renderPersonalStream() {
+  const container = $('personal-stream');
+  if (!container) return;
+
+  const personalItems = items.filter(i => i.context === 'personal' && i.status === 'active' && i.node_type !== 'folder' && i.node_type !== 'flow' && i.type !== 'routine');
+  const personalFlows = items.filter(i => i.context === 'personal' && i.status === 'active' && i.node_type === 'flow');
+  const routines = getRoutines();
+  const pendingRoutines = routines.filter(r => !isRoutineDoneToday(r));
+
+  let html = '';
+
+  // Routines due today (only pending ones, max 3 shown inline)
+  if (pendingRoutines.length) {
+    const anchorIcons = { morning: '🌅', afternoon: '☀️', evening: '🌙', anytime: '♾️' };
+    html += `<div class="section-label">Routines Today (${pendingRoutines.length} pending)</div>`;
+    html += `<div class="routine-list" style="margin-bottom:20px">`;
+    pendingRoutines.slice(0, 4).forEach(r => {
+      html += `
+        <div class="routine-card">
+          <div class="routine-card__check" onclick="completeRoutine('${r.id}')"></div>
+          <div class="routine-card__body">
+            <div class="routine-card__title">${esc(r.content?.title || 'Routine')}</div>
+            <div class="routine-card__meta">
+              <span>${anchorIcons[r.content?.anchor || 'anytime']} ${r.content?.anchor || 'anytime'}</span>
+              ${r.content?.streak > 1 ? `<span class="routine-card__streak">🔥 ${r.content.streak}d streak</span>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    if (pendingRoutines.length > 4) {
+      html += `<div style="padding:10px 16px;font-size:11px;color:var(--text-muted);border:var(--pp-border);background:var(--surface-2)">+${pendingRoutines.length - 4} more — <button class="btn btn--ghost btn--sm" style="padding:2px 6px;min-height:auto" onclick="openTool('routines')">View all</button></div>`;
+    }
+    html += `</div>`;
+  }
+
+  // Personal flows
+  if (personalFlows.length) {
+    html += `<div class="section-label">Personal Flows</div>`;
+    personalFlows.forEach(f => { html += renderFlowCard(f); });
+  }
+
+  // Task items (tasks, reflections, etc.)
+  if (!personalItems.length && !personalFlows.length && !pendingRoutines.length) {
+    html = `<div class="card"><div class="empty-state empty-state--personal">
+      <svg class="empty-state__svg" width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="40" cy="68" rx="28" ry="6" fill="var(--surface-2)" stroke="var(--border-color)" stroke-width="2"/>
+        <rect x="28" y="28" width="24" height="36" rx="12" fill="var(--mode-accent)" fill-opacity="0.25" stroke="var(--border-color)" stroke-width="2"/>
+        <circle cx="40" cy="20" r="10" fill="var(--mode-accent)" fill-opacity="0.4" stroke="var(--border-color)" stroke-width="2"/>
+        <line x1="40" y1="10" x2="40" y2="4" stroke="var(--mode-accent)" stroke-width="2" stroke-linecap="round"/>
+        <line x1="33" y1="13" x2="29" y2="9" stroke="var(--mode-accent)" stroke-width="2" stroke-linecap="round"/>
+        <line x1="47" y1="13" x2="51" y2="9" stroke="var(--mode-accent)" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <div class="empty-state__title">Clear Mind</div>
+      <div class="empty-state__text">No personal tasks. Set up routines or close the day with a reflection.</div>
+    </div></div>`;
+    container.innerHTML = html;
+    refreshIcons();
+    return;
+  }
+
+  if (personalItems.length) {
+    // Separate reflections from other items
+    const reflections = personalItems.filter(i => i.type === 'reflection');
+    const tasks = personalItems.filter(i => i.type !== 'reflection');
+
+    if (tasks.length) {
+      html += `<div class="stream-group">${tasks.map(item => renderStreamItem(item)).join('')}</div>`;
+    }
+    if (reflections.length) {
+      html += `<div class="section-label">Recent Reflections</div>`;
+      html += `<div class="stream-group">${reflections.slice(0, 3).map(item => renderStreamItem(item)).join('')}</div>`;
+    }
+  }
+
+  container.innerHTML = html;
+  refreshIcons();
+}
+
+function renderFlowCard(flow) {
+  const steps = flow.content?.steps || [];
+  const cur = flow.content?.current_step_index ?? 0;
+  const done = steps.filter(s => s.done).length;
+  const total = steps.length;
+  const allDone = done >= total && total > 0;
+
+  return `
+    <div class="flow-card" style="margin-bottom:12px">
+      <div class="flow-card__header" onclick="this.closest('.flow-card').querySelector('.flow-card__steps').style.display = this.closest('.flow-card').querySelector('.flow-card__steps').style.display === 'none' ? '' : 'none'">
+        <div class="flow-card__title">${esc(flow.content?.title || 'Flow')}</div>
+        <div class="flow-card__progress">${done}/${total} ${allDone ? '✓' : ''}</div>
+      </div>
+      <div class="flow-card__steps">
+        ${steps.map((step, i) => `
+          <div class="flow-step${step.done ? ' flow-step--done' : (i === cur ? ' flow-step--current' : '')}">
+            <div class="flow-step__num${step.done ? ' flow-step__num--done' : (i === cur ? ' flow-step__num--current' : '')}">
+              ${step.done ? '✓' : (i + 1)}
+            </div>
+            <div class="flow-step__text">${esc(step.title)}</div>
+            ${i === cur && !allDone ? `<button class="btn btn--sm btn--primary" style="padding:4px 10px;min-height:auto;font-size:10px" onclick="advanceFlow('${flow.id}')">Done</button>` : ''}
+          </div>
+        `).join('')}
+        ${!allDone ? '' : `
+          <div style="padding:12px 16px;display:flex;gap:8px;align-items:center;border-top:var(--pp-border)">
+            <span style="font-size:12px;color:var(--success);font-weight:600">Flow complete</span>
+            <button class="btn btn--sm" style="padding:4px 10px;min-height:auto;font-size:10px" onclick="markDone('${flow.id}')">Archive</button>
+          </div>
+        `}
+      </div>
+    </div>
+  `;
+}
+
+
+function renderStreamItem(item) {
+  const title = item.content?.title || item.content?.text || 'Untitled';
+  const type = item.type || 'task';
+  const tagClass = ['email', 'meeting', 'audit', 'reflection', 'routine'].includes(type)
+    ? ` stream-item__tag--${type}` : '';
+  const pinnedClass = item.pinned ? ' stream-item--pinned' : '';
+
+  return `
+    <div class="stream-item${pinnedClass}" data-id="${item.id}">
+      <div class="stream-item__check" onclick="event.stopPropagation();markDone('${item.id}')">${icon('check', 14)}</div>
+      <div class="stream-item__content">
+        <div class="stream-item__title">${item.pinned ? icon('pin', 14) + ' ' : ''}${esc(title)}</div>
+        <div class="stream-item__meta">
+          <span class="stream-item__tag${tagClass}">${type}</span>
+          ${item.content?.actions?.length ? `<span>${item.content.actions.length} actions</span>` : ''}
+          ${item.content?.tomorrow_top3 ? `<span>has top-3</span>` : ''}
+        </div>
+        <div class="stream-item__actions">
+          <button class="btn btn--ghost btn--sm" onclick="event.stopPropagation();viewItem('${item.id}')" style="padding:4px 8px;min-height:28px">View</button>
+          <button class="btn btn--ghost btn--sm" onclick="event.stopPropagation();deleteItem('${item.id}')" style="padding:4px 8px;min-height:28px;color:var(--danger)">Delete</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function viewItem(id) {
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  
+  let content = `<div class="card" style="padding:20px">
+    <h3 style="margin-bottom:16px">${esc(item.content?.title || 'Untitled')}</h3>
+    <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px">Type: ${item.type} | Created: ${item.created_at?.slice(0, 10)}</div>`;
+  
+  if (item.type === 'email' && item.content) {
+    if (item.content.actions?.length) {
+      content += `<div class="section-label">Actions</div><ul class="tool-email__list">${item.content.actions.map(a => `<li class="tool-email__list-item">${esc(a)}</li>`).join('')}</ul>`;
+    }
+    if (item.content.draft) {
+      content += `<div class="section-label">Draft</div><div class="tool-email__draft">${esc(item.content.draft)}</div>`;
+    }
+  } else if (item.type === 'meeting' && item.content) {
+    if (item.content.notes) {
+      content += `<div class="section-label">Notes</div><div style="white-space:pre-wrap;font-size:13px;padding:12px;background:var(--surface-2);border:var(--pp-border)">${esc(item.content.notes)}</div>`;
+    }
+    if (item.content.actions?.length) {
+      content += `<div class="section-label">Actions</div><ul class="tool-meeting__actions-list">${item.content.actions.map(a => `<li class="tool-meeting__action${a.done ? ' tool-meeting__action--done' : ''}"><div class="tool-meeting__action-check${a.done ? ' tool-meeting__action-check--done' : ''}">${a.done ? icon('check', 12) : ''}</div><span class="tool-meeting__action-text">${esc(a.text)}</span></li>`).join('')}</ul>`;
+    }
+  } else if (item.type === 'audit' && item.content) {
+    content += `<div class="tool-audit__decision">DECISION: ${esc(item.content.choice || '—')}</div>`;
+    content += `<div class="tool-audit__summary"><div class="tool-audit__summary-item"><strong>Situation:</strong> ${esc(item.content.situation || '—')}</div><div class="tool-audit__summary-item"><strong>First Action:</strong> ${esc(item.content.commitment || '—')}</div></div>`;
+  } else if (item.type === 'reflection' && item.content) {
+    if (item.content.review_today) {
+      content += `<div class="section-label">What Happened</div><div style="white-space:pre-wrap;font-size:13px;padding:12px;background:var(--surface-2);border:var(--pp-border);margin-bottom:12px">${esc(item.content.review_today)}</div>`;
+    }
+    if (item.content.gratitude) {
+      content += `<div class="section-label">Gratitude</div><div style="white-space:pre-wrap;font-size:13px;padding:12px;background:var(--mode-accent-bg);border:var(--pp-border);margin-bottom:12px">${esc(item.content.gratitude)}</div>`;
+    }
+    if (item.content.tomorrow_top3) {
+      content += `<div class="section-label">Tomorrow's Top 3</div><div style="white-space:pre-wrap;font-size:13px;padding:12px;background:var(--surface-2);border:var(--pp-border)">${esc(item.content.tomorrow_top3)}</div>`;
+    }
+  } else {
+    content += `<div style="white-space:pre-wrap">${esc(JSON.stringify(item.content, null, 2))}</div>`;
+  }
+  
+  content += `<button class="btn btn--sm" style="margin-top:20px" onclick="closeTool()">${icon('arrow-left', 14)} Back</button></div>`;
+  
+  currentTool = 'view';
+  $('tool-title').textContent = item.content?.title || 'View Item';
+  $('tool-subtitle').textContent = `${item.type} • ${item.created_at?.slice(0, 10)}`;
+  $('tool-content').innerHTML = content;
+  refreshIcons();
+  renderBreadcrumb();
+  render();
+}
+
+async function markDone(id) {
+  if (!requireSession() && !safeMode) return;
+  const idx = items.findIndex(i => i.id === id);
+  if (idx < 0) return;
+  
+  const prev = { ...items[idx] };
+  items[idx].status = 'done';
+  items[idx].completed_at = new Date().toISOString();
+  render();
+  
+  try {
+    await dbUpdate(id, { status: 'done', completed_at: items[idx].completed_at });
+    showToast('Done');
+  } catch (e) {
+    items[idx] = prev;
+    render();
+    showToast('Failed to update');
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TOOL NAVIGATION
+   ═══════════════════════════════════════════════════════════════════════════ */
+function openTool(toolId) {
+  const tool = TOOL_REGISTRY[toolId];
+  if (!tool) return;
+
+  currentTool = toolId;
+  if (tool.init) tool.init();
+
+  $('tool-title').textContent = tool.name || toolId;
+  $('tool-subtitle').textContent = tool.desc || '';
+
+  const content = $('tool-content');
+  content.classList.add('transitioning');
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      content.innerHTML = tool.render();
+      refreshIcons();
+      content.classList.remove('transitioning');
+    });
+  });
+
+  renderBreadcrumb();
+  render();
+}
+
+function closeTool() {
+  currentTool = null;
+  renderBreadcrumb();
+  render();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CAPTURE SHEET
+   ═══════════════════════════════════════════════════════════════════════════ */
+function openSheet() {
+  if (!requireSession() && !safeMode) return;
+  $('sheet-backdrop').classList.add('open');
+  $('cap-input').value = '';
+  capCtx = currentMode;
+  updateCapCtxPills();
+  setTimeout(() => $('cap-input').focus(), 100);
+}
+
+function closeSheet() { $('sheet-backdrop').classList.remove('open'); }
+function sheetBackdropClick(e) { if (e.target === $('sheet-backdrop')) closeSheet(); }
+
+async function submitCapture() {
+  if (!requireSession() && !safeMode) return;
+  const text = $('cap-input').value.trim();
+  if (!text) { showToast('Type something first'); return; }
+  
+  const item = {
+    type: 'task',
+    status: 'active',
+    context: capCtx,
+    priority: 'medium',
+    effort: 'medium',
+    node_type: 'item',
+    parent_id: null,
+    content: { title: text },
+    created_at: new Date().toISOString()
+  };
+  
+  try {
+    const saved = await dbSave(item);
+    if (saved) {
+      if (!safeMode) {
+        saved.node_type = saved.node_type || 'item';
+        items.unshift(saved);
+      }
+      saveLocal();
+      render();
+      closeSheet();
+      showToast('Saved');
+    }
+  } catch (e) { showToast('Failed to save'); }
+}
+
+function openRitual() { closeProfileMenu(); startRitual(); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   IN-APP CONFIRM DIALOG
+   ═══════════════════════════════════════════════════════════════════════════ */
+let _confirmResolve = null;
+
+function showConfirm(msg, title = 'Are you sure?', okLabel = 'Delete') {
+  return new Promise(resolve => {
+    _confirmResolve = resolve;
+    $('confirm-title').textContent = title;
+    $('confirm-msg').textContent = msg;
+    $('confirm-ok').textContent = okLabel;
+    $('confirm-overlay').classList.add('open');
+  });
+}
+
+function confirmResolve(result) {
+  $('confirm-overlay').classList.remove('open');
+  if (_confirmResolve) { _confirmResolve(result); _confirmResolve = null; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ENERGY GAUGE
+   ═══════════════════════════════════════════════════════════════════════════ */
+const ENERGY_KEY = 'sos-personal-energy';
+const ENERGY_DATE_KEY = 'sos-personal-energy-date';
+const ENERGY_LABELS = ['', 'Drained', 'Low', 'Okay', 'Good', 'Charged'];
+
+function getEnergy() {
+  const saved = localStorage.getItem(ENERGY_KEY);
+  const savedDate = localStorage.getItem(ENERGY_DATE_KEY);
+  // Reset energy if it's a new day
+  if (savedDate !== todayStr()) return null;
+  return saved ? parseInt(saved) : null;
+}
+
+function setEnergy(val) {
+  localStorage.setItem(ENERGY_KEY, String(val));
+  localStorage.setItem(ENERGY_DATE_KEY, todayStr());
+  renderEnergyWidget();
+}
+
+function renderEnergyWidget() {
+  const container = $('energy-widget');
+  if (!container) return;
+  const e = getEnergy();
+  container.innerHTML = `
+    <div class="energy-gauge" style="margin-bottom:20px">
+      <div class="energy-gauge__label">
+        <span>Energy Today</span>
+        <span class="energy-gauge__label-val">${e ? ENERGY_LABELS[e] : 'Not set'}</span>
+      </div>
+      <div class="energy-gauge__track">
+        ${[1,2,3,4,5].map(v => `
+          <div class="energy-gauge__pip${e && v <= e ? ` energy-gauge__pip--filled energy-gauge__pip--${v}` : ''}"
+               onclick="setEnergy(${v})" title="${ENERGY_LABELS[v]}"></div>
+        `).join('')}
+      </div>
+      <div class="energy-labels"><span>Low</span><span>High</span></div>
+    </div>
+  `;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ROUTINE ENGINE
+   ═══════════════════════════════════════════════════════════════════════════ */
+// Routines are stored in stream_items with type='routine', node_type='item', context='personal'
+// content: { title, anchor, cadence, last_completed_date, streak }
+
+function getRoutines() {
+  return items.filter(i => i.type === 'routine' && i.status === 'active' && i.context === 'personal');
+}
+
+function isRoutineDoneToday(routine) {
+  return routine.content?.last_completed_date === todayStr();
+}
+
+async function completeRoutine(id) {
+  const idx = items.findIndex(i => i.id === id);
+  if (idx < 0) return;
+  const r = items[idx];
+  const wasDone = isRoutineDoneToday(r);
+  if (wasDone) return; // already done
+
+  const today = todayStr();
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  const prevDate = r.content?.last_completed_date;
+  const prevStreak = r.content?.streak || 0;
+  const newStreak = prevDate === yesterday ? prevStreak + 1 : 1;
+
+  const patch = {
+    content: { ...r.content, last_completed_date: today, streak: newStreak }
+  };
+  const prev = { ...items[idx], content: { ...items[idx].content } };
+  Object.assign(items[idx].content, patch.content);
+  renderRoutineTool();
+
+  try {
+    await dbUpdate(id, patch);
+    saveLocal();
+    showToast(newStreak > 1 ? `🔥 ${newStreak} day streak!` : 'Routine done');
+  } catch (e) {
+    items[idx] = prev;
+    renderRoutineTool();
+    showToast('Failed to update');
+  }
+}
+
+async function deleteRoutine(id) {
+  const ok = await showConfirm('Remove this routine?', 'Delete Routine?', 'Remove');
+  if (!ok) return;
+  try {
+    await dbDelete(id);
+    showToast('Routine removed');
+    if (currentTool === 'routines') renderRoutineTool();
+  } catch (e) { showToast('Delete failed'); }
+}
+
+async function addRoutine(title, anchor, cadence) {
+  if (!title.trim()) { showToast('Enter a routine name'); return; }
+  const item = {
+    type: 'routine',
+    status: 'active',
+    context: 'personal',
+    priority: 'medium',
+    effort: 'low',
+    node_type: 'item',
+    parent_id: null,
+    content: { title: title.trim(), anchor, cadence, last_completed_date: null, streak: 0 },
+    created_at: new Date().toISOString()
+  };
+  try {
+    const saved = await dbSave(item);
+    if (saved) {
+      if (!safeMode) { saved.node_type = saved.node_type || 'item'; items.unshift(saved); }
+      saveLocal();
+      if (currentTool === 'routines') renderRoutineTool();
+      showToast('Routine added');
+    }
+  } catch (e) { showToast('Failed to save'); }
+}
+
+function renderRoutineTool() {
+  const container = $('tool-content');
+  if (!container || currentTool !== 'routines') return;
+  container.innerHTML = TOOL_REGISTRY.routines.render();
+  refreshIcons();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FLOW PERSISTENCE FIX
+   ═══════════════════════════════════════════════════════════════════════════ */
+async function saveFlow(title, steps, context = 'work') {
+  const item = {
+    type: 'flow',
+    status: 'active',
+    context,
+    priority: 'medium',
+    effort: 'medium',
+    node_type: 'flow',
+    parent_id: null,
+    content: {
+      title: title.trim() || 'Untitled Flow',
+      steps: steps.map((s, i) => ({ id: uid(), title: s, done: false })),
+      current_step_index: 0
+    },
+    created_at: new Date().toISOString()
+  };
+  try {
+    const saved = await dbSave(item);
+    if (saved) {
+      if (!safeMode) { saved.node_type = 'flow'; items.unshift(saved); }
+      saveLocal();
+      render();
+      showToast('Flow saved');
+    }
+  } catch (e) { showToast('Failed to save flow'); }
+}
+
+async function advanceFlow(id) {
+  const idx = items.findIndex(i => i.id === id);
+  if (idx < 0) return;
+  const f = items[idx];
+  const steps = f.content?.steps || [];
+  const cur = f.content?.current_step_index ?? 0;
+  if (cur >= steps.length) return;
+
+  steps[cur] = { ...steps[cur], done: true };
+  const next = cur + 1;
+  const patch = { content: { ...f.content, steps, current_step_index: next } };
+  const prev = { ...items[idx], content: { ...items[idx].content } };
+  Object.assign(items[idx].content, patch.content);
+  render();
+
+  if (next >= steps.length) showToast('Flow complete! ✓');
+  else showToast(`Step ${next + 1} of ${steps.length}`);
+
+  try {
+    await dbUpdate(id, patch);
+    saveLocal();
+  } catch (e) {
+    items[idx] = prev;
+    render();
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DAY CLOSURE RITUAL
+   ═══════════════════════════════════════════════════════════════════════════ */
+const RITUAL_STEPS = [
+  {
+    id: 'review',
+    label: 'Step 1 of 3 — Review',
+    question: 'What actually happened today?',
+    hint: 'Wins, setbacks, surprises. No spin.',
+    placeholder: 'Today I…',
+    rows: 4
+  },
+  {
+    id: 'gratitude',
+    label: 'Step 2 of 3 — Gratitude',
+    question: 'What are you grateful for today?',
+    hint: 'One thing is enough. Make it specific.',
+    placeholder: 'I am grateful for…',
+    rows: 3
+  },
+  {
+    id: 'tomorrow',
+    label: 'Step 3 of 3 — Tomorrow\'s Top 3',
+    question: 'What are the three most important things tomorrow?',
+    hint: 'Pick the moves that matter. Everything else is noise.',
+    placeholder: '1.\n2.\n3.',
+    rows: 4
+  }
+];
+
+let ritualState = { step: 0, answers: {}, complete: false };
+
+function startRitual() {
+  ritualState = { step: 0, answers: {}, complete: false };
+  renderRitual();
+  $('ritual-overlay').classList.add('open');
+}
+
+function closeRitual() {
+  $('ritual-overlay').classList.remove('open');
+}
+
+function ritualBackdropClick(e) {
+  if (e.target === $('ritual-overlay')) closeRitual();
+}
+
+function renderRitual() {
+  const body = $('ritual-body');
+  const title = $('ritual-title');
+  if (!body) return;
+
+  if (ritualState.complete) {
+    title.textContent = 'Day Closed';
+    body.innerHTML = `
+      <div class="ritual-complete">
+        <div class="ritual-complete__icon">🌙</div>
+        <div class="ritual-complete__title">Day closed.</div>
+        <div class="ritual-complete__sub">Reflection saved. Rest well — tomorrow's already set.</div>
+        <button class="btn btn--primary" onclick="closeRitual()">Done</button>
+      </div>
+    `;
+    // Glow the brand dot
+    const dot = document.querySelector('.topbar__dot');
+    if (dot) { dot.classList.remove('ritual-dot-glow'); void dot.offsetWidth; dot.classList.add('ritual-dot-glow'); }
+    return;
+  }
+
+  const step = RITUAL_STEPS[ritualState.step];
+  title.textContent = 'Close Day';
+
+  body.innerHTML = `
+    <div class="ritual-modal__steps">
+      ${RITUAL_STEPS.map((s, i) => `<div class="ritual-modal__step${i < ritualState.step ? ' ritual-modal__step--done' : (i === ritualState.step ? ' ritual-modal__step--active' : '')}"></div>`).join('')}
+    </div>
+    <div class="ritual-step__label">${step.label}</div>
+    <div class="ritual-step__question">${step.question}</div>
+    <div class="ritual-step__hint">${step.hint}</div>
+    <textarea class="input" id="ritual-answer" rows="${step.rows}" placeholder="${step.placeholder}">${esc(ritualState.answers[step.id] || '')}</textarea>
+    <div class="ritual-modal__nav">
+      ${ritualState.step > 0 ? `<button class="btn btn--sm" onclick="ritualPrev()">← Back</button>` : '<span></span>'}
+      ${ritualState.step < RITUAL_STEPS.length - 1
+        ? `<button class="btn btn--primary" onclick="ritualNext()">Continue →</button>`
+        : `<button class="btn btn--primary" onclick="ritualFinish()">Save & Close Day</button>`
+      }
+    </div>
+  `;
+  setTimeout(() => $('ritual-answer')?.focus(), 80);
+}
+
+function ritualSaveCurrent() {
+  const step = RITUAL_STEPS[ritualState.step];
+  const val = $('ritual-answer')?.value || '';
+  ritualState.answers[step.id] = val;
+}
+
+function ritualNext() {
+  ritualSaveCurrent();
+  if (ritualState.step < RITUAL_STEPS.length - 1) {
+    ritualState.step++;
+    renderRitual();
+  }
+}
+
+function ritualPrev() {
+  ritualSaveCurrent();
+  if (ritualState.step > 0) {
+    ritualState.step--;
+    renderRitual();
+  }
+}
+
+async function ritualFinish() {
+  ritualSaveCurrent();
+  if (!requireSession() && !safeMode) return;
+
+  const a = ritualState.answers;
+  const item = {
+    type: 'reflection',
+    status: 'active',
+    context: 'personal',
+    priority: 'low',
+    effort: 'low',
+    node_type: 'item',
+    parent_id: null,
+    content: {
+      title: `Reflection — ${todayStr()}`,
+      review_today: a.review || '',
+      gratitude: a.gratitude || '',
+      tomorrow_top3: a.tomorrow || ''
+    },
+    created_at: new Date().toISOString()
+  };
+
+  try {
+    const saved = await dbSave(item);
+    if (saved) {
+      if (!safeMode) { saved.node_type = saved.node_type || 'item'; items.unshift(saved); }
+      saveLocal();
+      render();
+    }
+    ritualState.complete = true;
+    renderRitual();
+  } catch (e) {
+    showToast('Failed to save — but that\'s okay');
+    ritualState.complete = true;
+    renderRitual();
+  }
+}
+
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TOAST & KEYBOARD
+   ═══════════════════════════════════════════════════════════════════════════ */
+let toastTimer;
+function showToast(msg) {
+  const toast = $('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeSheet(); closeProfileMenu(); if (currentTool) closeTool(); }
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openSheet(); }
+});
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════════════════════════════════════ */
+bootstrap();
+
+// Initialize Lucide icons when DOM is ready
+document.addEventListener('DOMContentLoaded', refreshIcons);
+</script>
+</body>
+</html>
