@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#ffcc00" id="theme-color-meta">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="StreamOS">
+<link rel="manifest" href="manifest.json">
 <title>StreamOS</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
@@ -431,6 +436,26 @@ textarea.input { resize: vertical; min-height: 100px; line-height: 1.6; }
 .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); z-index: 600; background: var(--text-primary); color: var(--text-inverse); font-size: 12px; font-weight: 600; padding: 12px 20px; border: 2px solid var(--text-inverse); opacity: 0; transition: opacity 0.2s; pointer-events: none; }
 .toast.show { opacity: 1; }
 
+/* ── Undo Toast ──────────────────────────────────────────────────────────── */
+.undo-toast {
+  position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+  z-index: 601; background: var(--text-primary); color: var(--text-inverse);
+  font-size: 12px; font-weight: 600; padding: 12px 16px 12px 20px;
+  border: 2px solid var(--text-inverse);
+  display: none; align-items: center; gap: 12px; white-space: nowrap;
+  max-width: calc(100vw - 32px);
+}
+.undo-toast.show { display: flex; }
+.undo-toast__msg { flex: 1; }
+.undo-toast__btn {
+  font-family: var(--pp-font); font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+  padding: 6px 12px; border: 2px solid var(--text-inverse);
+  background: transparent; color: var(--text-inverse);
+  cursor: pointer; flex-shrink: 0;
+}
+.undo-toast__btn:hover { background: rgba(255,255,255,0.15); }
+
 /* ═══════════════════════════════════════════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -567,6 +592,96 @@ textarea.input { resize: vertical; min-height: 100px; line-height: 1.6; }
 /* ── Empty States (isometric) ────────────────────────────────────────────── */
 .empty-state--work .empty-state__svg,
 .empty-state--personal .empty-state__svg { margin: 0 auto 20px; display: block; opacity: 0.7; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PHASE 4 — STALE TASK REVIEW + LIFECYCLE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Work Summary Bar ────────────────────────────────────────────────────── */
+.work-summary {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;
+}
+.work-summary__stat {
+  flex: 1; min-width: 80px; padding: 12px 14px;
+  background: var(--surface); border: var(--pp-border);
+  box-shadow: var(--pp-shadow-sm);
+}
+.work-summary__num {
+  font-size: 22px; font-weight: 700; line-height: 1; margin-bottom: 4px;
+}
+.work-summary__num--warn { color: var(--warning); }
+.work-summary__num--danger { color: var(--danger); }
+.work-summary__label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+.work-summary__stat--clickable { cursor: pointer; transition: box-shadow 0.1s; }
+.work-summary__stat--clickable:hover { box-shadow: var(--pp-shadow); }
+
+/* ── Stale tag on stream items ───────────────────────────────────────────── */
+.stream-item--stale { border-left: 4px solid var(--warning); }
+.stream-item--dormant { opacity: 0.7; }
+.age-badge {
+  font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+  padding: 2px 7px; border: 2px solid var(--warning); color: var(--warning);
+  background: var(--warning-bg);
+}
+.age-badge--dormant { border-color: var(--text-muted); color: var(--text-muted); background: var(--surface-2); }
+
+/* ── Needs Review Section ────────────────────────────────────────────────── */
+.review-section { margin-bottom: 20px; }
+.review-section__toggle {
+  width: 100%; display: flex; align-items: center;
+  gap: 8px; flex-wrap: wrap;
+  padding: 10px 14px; font-family: var(--pp-font); font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary);
+  background: var(--surface-2); border: var(--pp-border);
+  cursor: pointer;
+}
+.review-section__toggle:hover { background: var(--surface-3); }
+.review-section__badge {
+  background: var(--warning); color: #000; font-size: 10px; font-weight: 700;
+  padding: 2px 7px;
+}
+.review-section__peek {
+  flex: 1; display: flex; gap: 4px; align-items: center; overflow: hidden;
+  font-weight: 400; font-size: 10px; text-transform: none; letter-spacing: 0;
+  color: var(--text-muted); min-width: 0;
+}
+.review-section__arrow { margin-left: auto; color: var(--text-muted); font-size: 10px; flex-shrink: 0; }
+.review-section__body { border: var(--pp-border); border-top: none; background: var(--surface); }
+.review-section__batch {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; flex-wrap: wrap;
+  padding: 10px 14px; border-bottom: var(--pp-border); background: var(--surface-2);
+}
+.review-item {
+  padding: 12px 14px; border-bottom: 2px solid var(--border-light);
+  display: flex; align-items: flex-start; gap: 10px;
+}
+.review-item:last-child { border-bottom: none; }
+.review-item__content { flex: 1; min-width: 0; }
+.review-item__title { font-size: 13px; font-weight: 500; margin-bottom: 4px; word-break: break-word; }
+.review-item__meta { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; display: flex; gap: 8px; flex-wrap: wrap; }
+.review-item__actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.review-item__actions .btn { flex: 1 1 auto; min-width: 72px; }
+
+/* ── Ritual stale-task step ──────────────────────────────────────────────── */
+.ritual-review-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.ritual-review-item {
+  padding: 12px 14px; background: var(--surface-2); border: var(--pp-border);
+  display: flex; align-items: flex-start; gap: 10px;
+}
+.ritual-review-item__body { flex: 1; min-width: 0; }
+.ritual-review-item__title { font-size: 13px; font-weight: 500; margin-bottom: 8px; word-break: break-word; }
+.ritual-review-item__actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.ritual-review-item__actions .btn { flex: 1 1 auto; min-width: 72px; }
+.ritual-review-empty { font-size: 13px; color: var(--text-secondary); padding: 20px; text-align: center; background: var(--surface-2); border: var(--pp-border); }
+
+/* ── Ritual batch bar ────────────────────────────────────────────────────── */
+.ritual-batch-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; flex-wrap: wrap;
+  padding: 10px 14px; background: var(--surface-2); border: var(--pp-border);
+  margin-bottom: 8px;
+}
 </style>
 </head>
 <body>
@@ -639,13 +754,14 @@ textarea.input { resize: vertical; min-height: 100px; line-height: 1.6; }
       <div class="profile-menu__header"><div class="profile-menu__email" id="profile-email">—</div></div>
       <button class="profile-menu__item" onclick="handleReconnect();closeProfileMenu()">Reconnect</button>
       <button class="profile-menu__item" onclick="openRitual()">Close Day...</button>
+      <button class="profile-menu__item" onclick="openTool('archive');closeProfileMenu()">View Archive</button>
       <div class="profile-menu__divider"></div>
       <button class="profile-menu__item profile-menu__item--danger" onclick="signOut()">Sign Out</button>
     </div>
   </header>
 
   <nav class="breadcrumb-bar"><div class="breadcrumb-bar__inner" id="breadcrumb"></div></nav>
-  <div class="safe-banner" id="safe-banner"><i data-lucide="alert-triangle" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:6px"></i> Offline Mode — Changes saved locally</div>
+  <div class="safe-banner" id="safe-banner"><i data-lucide="alert-triangle" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:6px"></i> Local Only — Not synced. All changes saved on this device only.</div>
   <div class="session-banner" id="session-banner">
     <div class="session-banner__inner">
       <span class="session-banner__msg" id="session-msg">Session expired.</span>
@@ -671,6 +787,7 @@ textarea.input { resize: vertical; min-height: 100px; line-height: 1.6; }
         <div class="card tool-card" style="opacity:0.45;cursor:default" title="Coming soon"><span class="tool-card__icon"><i data-lucide="bar-chart-3"></i></span><div class="tool-card__name">Reports</div><div class="tool-card__desc" style="color:var(--text-muted)">Phase 4</div></div>
         <div class="card tool-card" style="opacity:0.45;cursor:default" title="Coming soon"><span class="tool-card__icon"><i data-lucide="share-2"></i></span><div class="tool-card__name">Social</div><div class="tool-card__desc" style="color:var(--text-muted)">Phase 4</div></div>
       </div>
+      <div id="work-summary"></div>
       <div class="section-label">Active Work Items</div>
       <div id="work-stream"></div>
     </div>
@@ -727,6 +844,12 @@ textarea.input { resize: vertical; min-height: 100px; line-height: 1.6; }
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
+
+<!-- UNDO TOAST -->
+<div class="undo-toast" id="undo-toast">
+  <span class="undo-toast__msg" id="undo-msg"></span>
+  <button class="undo-toast__btn" onclick="undoLast()">Undo</button>
+</div>
 
 <!-- IN-APP CONFIRM DIALOG -->
 <div class="confirm-overlay" id="confirm-overlay">
@@ -1604,6 +1727,74 @@ const TOOL_REGISTRY = {
       </div>`;
     },
     init() {}
+  },
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     ARCHIVE VIEWER
+     ───────────────────────────────────────────────────────────────────────── */
+  archive: {
+    name: 'Archive',
+    desc: 'Browse and restore archived items',
+    state: { filter: 'all' },
+
+    render() {
+      const s = this.state;
+      // Sort newest archived/updated first
+      const sortFn = (a, b) => new Date(b.updated_at || b.created_at || 0) - new Date(a.updated_at || a.created_at || 0);
+      const archived = items.filter(i => i.status === 'archived').sort(sortFn);
+      const work     = archived.filter(i => i.context === 'work');
+      const personal = archived.filter(i => i.context === 'personal');
+      const shown    = s.filter === 'work' ? work : s.filter === 'personal' ? personal : archived;
+
+      return `
+        <div style="margin-bottom:16px">
+          <button class="btn btn--sm" onclick="closeTool()">← Back</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+          <button class="btn btn--sm${s.filter === 'all' ? ' btn--primary' : ''}" onclick="TOOL_REGISTRY.archive.setFilter('all')">All (${archived.length})</button>
+          <button class="btn btn--sm${s.filter === 'work' ? ' btn--primary' : ''}" onclick="TOOL_REGISTRY.archive.setFilter('work')">Work (${work.length})</button>
+          <button class="btn btn--sm${s.filter === 'personal' ? ' btn--primary' : ''}" onclick="TOOL_REGISTRY.archive.setFilter('personal')">Personal (${personal.length})</button>
+        </div>
+        ${!shown.length ? `
+          <div class="card"><div class="empty-state">
+            <div class="empty-state__title">Archive Empty</div>
+            <div class="empty-state__text">Archived items appear here. Restore to return an item to your active stream, or delete it permanently.</div>
+          </div></div>
+        ` : `
+          <div class="stream-group">
+            ${shown.map(item => {
+              const title = item.content?.title || item.content?.text || 'Untitled';
+              const type = item.type || 'task';
+              const dateRef = item.updated_at || item.created_at;
+              const date = dateRef ? new Date(dateRef).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '';
+              return `
+                <div class="stream-item" data-id="${item.id}">
+                  <div class="stream-item__content">
+                    <div class="stream-item__title">${esc(title)}</div>
+                    <div class="stream-item__meta">
+                      <span class="stream-item__tag">${type}</span>
+                      <span>${item.context || ''}</span>
+                      ${date ? `<span>${date}</span>` : ''}
+                    </div>
+                    <div class="stream-item__actions">
+                      <button class="btn btn--ghost btn--sm" onclick="restoreItem('${item.id}')" style="padding:4px 8px;min-height:28px">Restore</button>
+                      <button class="btn btn--ghost btn--sm" onclick="deleteItem('${item.id}')" style="padding:4px 8px;min-height:28px;color:var(--danger)">Delete</button>
+                    </div>
+                  </div>
+                </div>`;
+            }).join('')}
+          </div>
+        `}
+      `;
+    },
+
+    setFilter(f) {
+      this.state.filter = f;
+      const content = $('tool-content');
+      if (content) { content.innerHTML = this.render(); refreshIcons(); }
+    },
+
+    init() { this.state = { filter: currentMode === 'personal' ? 'personal' : 'work' }; }
   }
 };
 
@@ -1663,7 +1854,7 @@ function applyState(newState, msg) {
   }
   
   if (syncLabel) {
-    const labels = { ready: safeMode ? 'Offline' : 'Synced', saving: 'Saving...', reconnecting: 'Reconnecting...', session_expired: 'Session expired', error: 'Error' };
+    const labels = { ready: safeMode ? 'Local Only' : 'Synced', saving: 'Saving...', reconnecting: 'Reconnecting...', session_expired: 'Session expired', error: 'Error' };
     syncLabel.textContent = labels[newState] || newState;
   }
   
@@ -1710,9 +1901,12 @@ async function bootstrap() {
   applyState('booting');
   bootStatus('Initializing...');
   initMode();
-  
+
   // Load local cache first
   loadLocal();
+
+  // Restore any in-progress ritual state (daily — cleared on completion or next day)
+  loadRitualState();
   
   try {
     const { data: { session }, error } = await withTimeout(SB.auth.getSession(), 8000, 'getSession');
@@ -1957,13 +2151,81 @@ async function dbDelete(id) {
 }
 
 async function deleteItem(id) {
-  const ok = await showConfirm('This item will be permanently removed.', 'Delete Item?', 'Delete');
+  const ok = await showConfirm('This item will be permanently removed. This cannot be undone.', 'Delete Item?', 'Delete');
   if (!ok) return;
   try {
     await dbDelete(id);
     showToast('Deleted');
     render();
+    // Refresh archive viewer if open
+    if (currentTool === 'archive') { $('tool-content').innerHTML = TOOL_REGISTRY.archive.render(); refreshIcons(); }
   } catch (e) { showToast('Delete failed'); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UNDO SYSTEM
+   ═══════════════════════════════════════════════════════════════════════════ */
+let _undoState = null; // { type, snapshots: [{id, prev}], timer }
+
+function showUndoToast(msg) {
+  const el = $('undo-toast');
+  const msgEl = $('undo-msg');
+  if (!el || !msgEl) return;
+  msgEl.textContent = msg;
+  el.classList.add('show');
+  if (_undoState?.timer) clearTimeout(_undoState.timer);
+  _undoState.timer = setTimeout(() => {
+    el.classList.remove('show');
+    _undoState = null;
+  }, 5000);
+}
+
+function hideUndoToast() {
+  $('undo-toast')?.classList.remove('show');
+  if (_undoState?.timer) clearTimeout(_undoState.timer);
+}
+
+async function undoLast() {
+  if (!_undoState) return;
+  hideUndoToast();
+  const { snapshots } = _undoState;
+  _undoState = null;
+
+  // Restore each item's previous status in local state
+  snapshots.forEach(({ id, prev }) => {
+    const idx = items.findIndex(i => i.id === id);
+    if (idx >= 0) Object.assign(items[idx], prev);
+  });
+  render();
+  saveLocal();
+
+  // Persist the restoration remotely
+  await Promise.allSettled(
+    snapshots.map(({ id, prev }) => dbUpdate(id, { status: prev.status }))
+  );
+  saveLocal();
+  showToast(`Undone ✓`);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESTORE FROM ARCHIVE
+   ═══════════════════════════════════════════════════════════════════════════ */
+async function restoreItem(id) {
+  const idx = items.findIndex(i => i.id === id);
+  if (idx < 0) return;
+  const prev = { status: items[idx].status };
+  items[idx].status = 'active';
+  render();
+  if (currentTool === 'archive') { $('tool-content').innerHTML = TOOL_REGISTRY.archive.render(); refreshIcons(); }
+  try {
+    await dbUpdate(id, { status: 'active' });
+    saveLocal();
+    showToast('Restored ✓');
+  } catch (e) {
+    items[idx].status = prev.status;
+    render();
+    showToast('Restore failed');
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -2010,24 +2272,203 @@ function renderBreadcrumb() {
   });
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   PHASE 4 — TASK LIFECYCLE & STALE REVIEW
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Age classification ─────────────────────────────────────────────────── */
+// Uses refreshed_at if present, otherwise created_at
+function getItemAgeMs(item) {
+  const ref = item.refreshed_at || item.created_at;
+  if (!ref) return 0;
+  return Date.now() - new Date(ref).getTime();
+}
+
+const STALE_MS   = 24 * 60 * 60 * 1000; // 24 hours
+const DORMANT_MS = 72 * 60 * 60 * 1000; // 72 hours
+
+function getTaskAgeState(item) {
+  // Only classify active task-like items — skip routines, reflections, flows
+  if (!item || item.status !== 'active') return 'fresh';
+  if (['routine', 'reflection'].includes(item.type)) return 'fresh';
+  if (item.node_type === 'flow') return 'fresh';
+  const age = getItemAgeMs(item);
+  if (age >= DORMANT_MS) return 'dormant';
+  if (age >= STALE_MS)   return 'stale';
+  return 'fresh';
+}
+
+const isStale   = item => getTaskAgeState(item) === 'stale';
+const isDormant = item => getTaskAgeState(item) === 'dormant';
+
+function getAgeLabel(item) {
+  const ms = getItemAgeMs(item);
+  const h = Math.floor(ms / 3600000);
+  const d = Math.floor(h / 24);
+  if (d >= 1) return `${d}d old`;
+  return `${h}h old`;
+}
+
+/* ── Recommit action ────────────────────────────────────────────────────── */
+async function recommitItem(id) {
+  const idx = items.findIndex(i => i.id === id);
+  if (idx < 0) return;
+  const prev = { ...items[idx] };
+  const now = new Date().toISOString();
+  items[idx].refreshed_at = now;
+  render();
+  try {
+    await dbUpdate(id, { refreshed_at: now });
+    saveLocal();
+    showToast('Recommitted ✓');
+  } catch (e) {
+    items[idx] = prev;
+    render();
+    showToast('Failed to recommit');
+  }
+}
+
+/* ── Archive action (undo-aware) ────────────────────────────────────────── */
+async function archiveItem(id) {
+  const idx = items.findIndex(i => i.id === id);
+  if (idx < 0) return;
+  const prev = { status: items[idx].status };
+  items[idx].status = 'archived';
+  // Set up undo
+  hideUndoToast();
+  _undoState = { type: 'archive', snapshots: [{ id, prev }] };
+  render();
+  try {
+    await dbUpdate(id, { status: 'archived' });
+    saveLocal();
+    showUndoToast('Item archived — Undo');
+  } catch (e) {
+    items[idx].status = prev.status;
+    _undoState = null;
+    render();
+    showToast('Failed to archive');
+  }
+}
+
+/* ── Shared review item card ────────────────────────────────────────────── */
+function renderReviewItem(item) {
+  const title = item.content?.title || item.content?.text || 'Untitled';
+  const ageLabel = getAgeLabel(item);
+  const type = item.type || 'task';
+  return `
+    <div class="review-item">
+      <div class="review-item__content">
+        <div class="review-item__title">${esc(title)}</div>
+        <div class="review-item__meta">
+          <span class="stream-item__tag">${type}</span>
+          <span class="age-badge age-badge--dormant">${ageLabel}</span>
+        </div>
+        <div class="review-item__actions">
+          <button class="btn btn--sm btn--primary" style="padding:4px 10px;min-height:32px;font-size:11px" onclick="recommitItem('${item.id}')">Recommit</button>
+          <button class="btn btn--sm" style="padding:4px 10px;min-height:32px;font-size:11px" onclick="archiveItem('${item.id}')">Archive</button>
+          <button class="btn btn--sm" style="padding:4px 10px;min-height:32px;font-size:11px;color:var(--danger)" onclick="deleteItem('${item.id}')">Delete</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* ── Collapsible review section with batch actions ───────────────────────── */
+function renderReviewSection(dormantItems, sectionId) {
+  if (!dormantItems.length) return '';
+  const bodyId = `review-body-${sectionId}`;
+  const ids = JSON.stringify(dormantItems.map(i => i.id));
+  // Peek: show up to 2 titles as a hint
+  const peek = dormantItems.slice(0, 2).map(i =>
+    `<span style="font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px">"${esc(i.content?.title || i.content?.text || 'Untitled')}"</span>`
+  ).join('<span style="color:var(--text-muted);padding:0 4px">·</span>');
+
+  return `
+    <div class="review-section">
+      <button class="review-section__toggle" onclick="toggleReviewSection('${bodyId}', this)">
+        <span>Needs Review</span>
+        <span class="review-section__badge">${dormantItems.length}</span>
+        <span class="review-section__peek">${peek}${dormantItems.length > 2 ? `<span style="color:var(--text-muted);font-size:10px"> +${dormantItems.length - 2} more</span>` : ''}</span>
+        <span class="review-section__arrow">▼</span>
+      </button>
+      <div id="${bodyId}" class="review-section__body" style="display:none">
+        <div class="review-section__batch">
+          <span style="font-size:11px;color:var(--text-secondary)">${dormantItems.length} item${dormantItems.length > 1 ? 's' : ''} need a decision</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn--sm btn--primary" style="padding:4px 12px;min-height:32px;font-size:11px" onclick="recommitAll(${ids})">Recommit All</button>
+            <button class="btn btn--sm" style="padding:4px 12px;min-height:32px;font-size:11px" onclick="archiveAll(${ids})">Archive All</button>
+          </div>
+        </div>
+        ${dormantItems.map(i => renderReviewItem(i)).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function toggleReviewSection(bodyId, btn) {
+  const body = document.getElementById(bodyId);
+  if (!body) return;
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : '';
+  const arrow = btn.querySelector('.review-section__arrow');
+  if (arrow) arrow.textContent = isOpen ? '▼' : '▲';
+}
 function renderWorkStream() {
   const container = $('work-stream');
+  const summaryEl = $('work-summary');
   if (!container) return;
 
-  const workItems = items.filter(i => i.context === 'work' && i.status === 'active' && i.node_type !== 'folder' && i.node_type !== 'flow');
+  // All active work items (exclude archived, flows, folders)
+  const allWork = items.filter(i =>
+    i.context === 'work' &&
+    i.status === 'active' &&
+    i.node_type !== 'folder' &&
+    i.node_type !== 'flow'
+  );
   const workFlows = items.filter(i => i.context === 'work' && i.status === 'active' && i.node_type === 'flow');
-  const pinned = workItems.filter(i => i.pinned);
-  const regular = workItems.filter(i => !i.pinned).slice(0, 10);
+
+  // Split by age
+  const pinned  = allWork.filter(i => i.pinned);
+  const fresh   = allWork.filter(i => !i.pinned && getTaskAgeState(i) === 'fresh');
+  const stale   = allWork.filter(i => !i.pinned && isStale(i));
+  const dormant = allWork.filter(i => !i.pinned && isDormant(i));
+
+  const activeVisible = [...pinned, ...fresh, ...stale].slice(0, 12);
+
+  // ── Summary bar (stats are clickable) ──
+  if (summaryEl) {
+    summaryEl.innerHTML = `
+      <div class="work-summary">
+        <div class="work-summary__stat">
+          <div class="work-summary__num">${activeVisible.length}</div>
+          <div class="work-summary__label">Active</div>
+        </div>
+        <div class="work-summary__stat work-summary__stat--clickable" onclick="scrollToFlows()">
+          <div class="work-summary__num">${workFlows.length}</div>
+          <div class="work-summary__label">Flows${workFlows.length ? ' ↓' : ''}</div>
+        </div>
+        <div class="work-summary__stat work-summary__stat--clickable" onclick="scrollToStaleItems()">
+          <div class="work-summary__num${stale.length ? ' work-summary__num--warn' : ''}">${stale.length}</div>
+          <div class="work-summary__label">Stale${stale.length ? ' ↓' : ''}</div>
+        </div>
+        <div class="work-summary__stat work-summary__stat--clickable" onclick="expandReviewSection('review-body-work')">
+          <div class="work-summary__num${dormant.length ? ' work-summary__num--danger' : ''}">${dormant.length}</div>
+          <div class="work-summary__label">Review${dormant.length ? ' ↓' : ''}</div>
+        </div>
+      </div>
+    `;
+  }
 
   let html = '';
 
-  // Flows section
+  // Flows
   if (workFlows.length) {
     html += `<div class="section-label">Active Flows</div>`;
     workFlows.forEach(f => { html += renderFlowCard(f); });
   }
 
-  if (!workItems.length && !workFlows.length) {
+  // Empty state
+  if (!allWork.length && !workFlows.length) {
     html = `<div class="card"><div class="empty-state empty-state--work">
       <svg class="empty-state__svg" width="96" height="72" viewBox="0 0 96 72" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="4" y="24" width="40" height="36" fill="var(--surface-2)" stroke="var(--border-color)" stroke-width="2"/>
@@ -2046,9 +2487,15 @@ function renderWorkStream() {
     return;
   }
 
-  if (workItems.length) {
-    html += `<div class="stream-group">${[...pinned, ...regular].map(item => renderStreamItem(item)).join('')}</div>`;
+  // Active items (fresh + stale show inline)
+  if (activeVisible.length) {
+    html += `<div class="stream-group">`;
+    activeVisible.forEach(item => { html += renderStreamItem(item); });
+    html += `</div>`;
   }
+
+  // Dormant → collapsed review section
+  html += renderReviewSection(dormant, 'work');
 
   container.innerHTML = html;
   refreshIcons();
@@ -2058,7 +2505,14 @@ function renderPersonalStream() {
   const container = $('personal-stream');
   if (!container) return;
 
-  const allPersonal = items.filter(i => i.context === 'personal' && i.status === 'active' && i.node_type !== 'folder' && i.node_type !== 'flow' && i.type !== 'routine');
+  // Exclude archived items from personal stream
+  const allPersonal = items.filter(i =>
+    i.context === 'personal' &&
+    i.status === 'active' &&
+    i.node_type !== 'folder' &&
+    i.node_type !== 'flow' &&
+    i.type !== 'routine'
+  );
   const personalFlows = items.filter(i => i.context === 'personal' && i.status === 'active' && i.node_type === 'flow');
   const routines = getRoutines();
   const pendingRoutines = routines.filter(r => !isRoutineDoneToday(r));
@@ -2066,6 +2520,10 @@ function renderPersonalStream() {
 
   const tasks = allPersonal.filter(i => i.type !== 'reflection');
   const reflections = allPersonal.filter(i => i.type === 'reflection');
+
+  // Split tasks by age
+  const activeTasks  = tasks.filter(i => getTaskAgeState(i) !== 'dormant');
+  const dormantTasks = tasks.filter(i => isDormant(i));
 
   let html = '';
 
@@ -2079,7 +2537,6 @@ function renderPersonalStream() {
       </div>
     `;
     html += `<div class="routine-list" style="margin-bottom:20px">`;
-    // Show pending first, then done (greyed), max 5 total
     const shown = [...pendingRoutines, ...doneRoutines].slice(0, 5);
     shown.forEach(r => {
       const done = isRoutineDoneToday(r);
@@ -2105,7 +2562,6 @@ function renderPersonalStream() {
     }
     html += `</div>`;
   } else {
-    // No routines yet — prompt to add
     html += `
       <div class="card" style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
         <span style="font-size:12px;color:var(--text-secondary)">No routines set up yet</span>
@@ -2120,11 +2576,14 @@ function renderPersonalStream() {
     personalFlows.forEach(f => { html += renderFlowCard(f); });
   }
 
-  // ── Tasks ──
-  if (tasks.length) {
+  // ── Tasks (fresh + stale inline) ──
+  if (activeTasks.length) {
     html += `<div class="section-label">Tasks</div>`;
-    html += `<div class="stream-group">${tasks.map(item => renderStreamItem(item)).join('')}</div>`;
+    html += `<div class="stream-group">${activeTasks.map(item => renderStreamItem(item)).join('')}</div>`;
   }
+
+  // ── Dormant tasks → review section ──
+  html += renderReviewSection(dormantTasks, 'personal');
 
   // ── Reflections ──
   if (reflections.length) {
@@ -2132,8 +2591,8 @@ function renderPersonalStream() {
     html += `<div class="stream-group">${reflections.slice(0, 3).map(item => renderStreamItem(item)).join('')}</div>`;
   }
 
-  // ── Empty state (no routines, no tasks, no flows, no reflections) ──
-  if (!routines.length && !tasks.length && !personalFlows.length && !reflections.length) {
+  // ── Empty state ──
+  if (!routines.length && !activeTasks.length && !dormantTasks.length && !personalFlows.length && !reflections.length) {
     html = `<div class="card"><div class="empty-state empty-state--personal">
       <svg class="empty-state__svg" width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
         <ellipse cx="40" cy="68" rx="28" ry="6" fill="var(--surface-2)" stroke="var(--border-color)" stroke-width="2"/>
@@ -2195,9 +2654,11 @@ function renderStreamItem(item) {
     ? ` stream-item__tag--${type}` : '';
   const pinnedClass = item.pinned ? ' stream-item--pinned' : '';
   const isDone = item.status === 'done';
+  const ageState = getTaskAgeState(item);
+  const staleClass = ageState === 'stale' ? ' stream-item--stale' : '';
 
   return `
-    <div class="stream-item${pinnedClass}${isDone ? ' stream-item--done' : ''}" data-id="${item.id}">
+    <div class="stream-item${pinnedClass}${isDone ? ' stream-item--done' : ''}${staleClass}" data-id="${item.id}">
       <div class="stream-item__check${isDone ? ' stream-item__check--done' : ''}" onclick="event.stopPropagation();${isDone ? '' : `markDone('${item.id}')`}" title="${isDone ? 'Done' : 'Mark done'}">
         ${isDone ? icon('check', 14) : ''}
       </div>
@@ -2205,11 +2666,13 @@ function renderStreamItem(item) {
         <div class="stream-item__title">${item.pinned ? icon('pin', 14) + ' ' : ''}${esc(title)}</div>
         <div class="stream-item__meta">
           <span class="stream-item__tag${tagClass}">${type}</span>
+          ${ageState === 'stale' ? `<span class="age-badge">${getAgeLabel(item)}</span>` : ''}
           ${item.content?.actions?.length ? `<span>${item.content.actions.length} actions</span>` : ''}
           ${item.content?.tomorrow_top3 ? `<span>has top-3</span>` : ''}
         </div>
         <div class="stream-item__actions">
           <button class="btn btn--ghost btn--sm" onclick="event.stopPropagation();viewItem('${item.id}')" style="padding:4px 8px;min-height:28px">View</button>
+          ${ageState === 'stale' ? `<button class="btn btn--ghost btn--sm" onclick="event.stopPropagation();recommitItem('${item.id}')" style="padding:4px 8px;min-height:28px">Recommit</button>` : ''}
           <button class="btn btn--ghost btn--sm" onclick="event.stopPropagation();deleteItem('${item.id}')" style="padding:4px 8px;min-height:28px;color:var(--danger)">Delete</button>
         </div>
       </div>
@@ -2250,7 +2713,10 @@ function viewItem(id) {
       content += `<div class="section-label">Gratitude</div><div style="white-space:pre-wrap;font-size:13px;padding:12px;background:var(--mode-accent-bg);border:var(--pp-border);margin-bottom:12px">${esc(item.content.gratitude)}</div>`;
     }
     if (item.content.tomorrow_top3) {
-      content += `<div class="section-label">Tomorrow's Top 3</div><div style="white-space:pre-wrap;font-size:13px;padding:12px;background:var(--surface-2);border:var(--pp-border)">${esc(item.content.tomorrow_top3)}</div>`;
+      content += `<div class="section-label">Tomorrow's Top 3</div><div style="white-space:pre-wrap;font-size:13px;padding:12px;background:var(--surface-2);border:var(--pp-border);margin-bottom:12px">${esc(item.content.tomorrow_top3)}</div>`;
+    }
+    if (item.content.stale_cleared) {
+      content += `<div class="section-label">Backlog</div><div style="font-size:12px;padding:10px 12px;background:var(--surface-2);border:var(--pp-border)">${esc(item.content.stale_cleared)}</div>`;
     }
   } else {
     content += `<div style="white-space:pre-wrap">${esc(JSON.stringify(item.content, null, 2))}</div>`;
@@ -2547,37 +3013,146 @@ async function advanceFlow(id) {
 /* ═══════════════════════════════════════════════════════════════════════════
    DAY CLOSURE RITUAL
    ═══════════════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════════════
+   RITUAL PERSISTENCE
+   ═══════════════════════════════════════════════════════════════════════════ */
+const RITUAL_STORAGE_KEY = 'sos-ritual-state';
+
+function saveRitualState() {
+  try {
+    localStorage.setItem(RITUAL_STORAGE_KEY, JSON.stringify({
+      step: ritualState.step,
+      answers: ritualState.answers,
+      complete: ritualState.complete,
+      savedAt: new Date().toISOString()
+    }));
+  } catch (e) { console.warn('Ritual state save failed:', e); }
+}
+
+function loadRitualState() {
+  try {
+    const raw = localStorage.getItem(RITUAL_STORAGE_KEY);
+    if (!raw) return false;
+    const saved = JSON.parse(raw);
+    // Discard if it's from a previous day (ritual is daily)
+    if (saved.savedAt && new Date(saved.savedAt).toDateString() !== new Date().toDateString()) {
+      clearRitualState();
+      return false;
+    }
+    ritualState = {
+      step: saved.step || 0,
+      answers: saved.answers || {},
+      complete: saved.complete || false
+    };
+    return true;
+  } catch (e) { return false; }
+}
+
+function clearRitualState() {
+  localStorage.removeItem(RITUAL_STORAGE_KEY);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BATCH STALE ACTIONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+async function recommitAll(itemIds) {
+  if (!itemIds.length) return;
+  const now = new Date().toISOString();
+  // Optimistic local update
+  itemIds.forEach(id => {
+    const idx = items.findIndex(i => i.id === id);
+    if (idx >= 0) items[idx].refreshed_at = now;
+  });
+  render();
+  // Persist each (fire-and-forget style, non-blocking per item)
+  const results = await Promise.allSettled(
+    itemIds.map(id => dbUpdate(id, { refreshed_at: now }))
+  );
+  saveLocal();
+  const failed = results.filter(r => r.status === 'rejected').length;
+  showToast(failed ? `Recommitted (${failed} failed)` : `Recommitted ${itemIds.length} item${itemIds.length > 1 ? 's' : ''} ✓`);
+}
+
+async function archiveAll(itemIds) {
+  if (!itemIds.length) return;
+  const ok = await showConfirm(
+    `Archive ${itemIds.length} item${itemIds.length > 1 ? 's' : ''}? They will be removed from active streams.`,
+    'Archive All?',
+    'Archive All'
+  );
+  if (!ok) return;
+  // Snapshot for undo
+  const snapshots = itemIds.map(id => {
+    const idx = items.findIndex(i => i.id === id);
+    return idx >= 0 ? { id, prev: { status: items[idx].status } } : null;
+  }).filter(Boolean);
+
+  // Optimistic update
+  itemIds.forEach(id => {
+    const idx = items.findIndex(i => i.id === id);
+    if (idx >= 0) items[idx].status = 'archived';
+  });
+  hideUndoToast();
+  _undoState = { type: 'archive_batch', snapshots };
+  render();
+
+  const results = await Promise.allSettled(
+    itemIds.map(id => dbUpdate(id, { status: 'archived' }))
+  );
+  saveLocal();
+  const failed = results.filter(r => r.status === 'rejected').length;
+  if (failed) {
+    showToast(`Archived (${failed} failed)`);
+  } else {
+    showUndoToast(`Archived ${itemIds.length} item${itemIds.length > 1 ? 's' : ''} — Undo`);
+  }
+}
+
 const RITUAL_STEPS = [
   {
     id: 'review',
-    label: 'Step 1 of 3 — Review',
+    label: 'Step 1 of 4 — Review',
     question: 'What actually happened today?',
     hint: 'Wins, setbacks, surprises. No spin.',
     placeholder: 'Today I…',
-    rows: 4
+    rows: 4,
+    type: 'textarea'
   },
   {
     id: 'gratitude',
-    label: 'Step 2 of 3 — Gratitude',
+    label: 'Step 2 of 4 — Gratitude',
     question: 'What are you grateful for today?',
     hint: 'One thing is enough. Make it specific.',
     placeholder: 'I am grateful for…',
-    rows: 3
+    rows: 3,
+    type: 'textarea'
+  },
+  {
+    id: 'stale',
+    label: 'Step 3 of 4 — Clear the Backlog',
+    question: 'Stale and dormant tasks that need a decision.',
+    hint: 'Recommit, archive, or delete. Do not carry dead weight.',
+    type: 'stale_review'
   },
   {
     id: 'tomorrow',
-    label: 'Step 3 of 3 — Tomorrow\'s Top 3',
+    label: 'Step 4 of 4 — Tomorrow\'s Top 3',
     question: 'What are the three most important things tomorrow?',
     hint: 'Pick the moves that matter. Everything else is noise.',
     placeholder: '1.\n2.\n3.',
-    rows: 4
+    rows: 4,
+    type: 'textarea'
   }
 ];
 
 let ritualState = { step: 0, answers: {}, complete: false };
 
 function startRitual() {
-  ritualState = { step: 0, answers: {}, complete: false };
+  // Restore in-progress ritual if one exists for today
+  const had = loadRitualState();
+  if (!had) {
+    ritualState = { step: 0, answers: {}, complete: false };
+  }
   renderRitual();
   $('ritual-overlay').classList.add('open');
 }
@@ -2605,7 +3180,6 @@ function renderRitual() {
         <button class="btn btn--primary" onclick="closeRitual()">Done</button>
       </div>
     `;
-    // Glow the brand dot
     const dot = document.querySelector('.topbar__dot');
     if (dot) { dot.classList.remove('ritual-dot-glow'); void dot.offsetWidth; dot.classList.add('ritual-dot-glow'); }
     return;
@@ -2614,14 +3188,14 @@ function renderRitual() {
   const step = RITUAL_STEPS[ritualState.step];
   title.textContent = 'Close Day';
 
-  body.innerHTML = `
+  // Progress bar
+  const progressHtml = `
     <div class="ritual-modal__steps">
       ${RITUAL_STEPS.map((s, i) => `<div class="ritual-modal__step${i < ritualState.step ? ' ritual-modal__step--done' : (i === ritualState.step ? ' ritual-modal__step--active' : '')}"></div>`).join('')}
     </div>
-    <div class="ritual-step__label">${step.label}</div>
-    <div class="ritual-step__question">${step.question}</div>
-    <div class="ritual-step__hint">${step.hint}</div>
-    <textarea class="input" id="ritual-answer" rows="${step.rows}" placeholder="${step.placeholder}">${esc(ritualState.answers[step.id] || '')}</textarea>
+  `;
+
+  const navHtml = `
     <div class="ritual-modal__nav">
       ${ritualState.step > 0 ? `<button class="btn btn--sm" onclick="ritualPrev()">← Back</button>` : '<span></span>'}
       ${ritualState.step < RITUAL_STEPS.length - 1
@@ -2630,19 +3204,149 @@ function renderRitual() {
       }
     </div>
   `;
-  setTimeout(() => $('ritual-answer')?.focus(), 80);
+
+  if (step.type === 'stale_review') {
+      const allReviewable = items.filter(i =>
+        i.status === 'active' &&
+        i.node_type !== 'flow' &&
+        !['routine', 'reflection'].includes(i.type) &&
+        (isStale(i) || isDormant(i))
+      );
+      const CAP = 6;
+      const reviewable = allReviewable.slice(0, CAP);
+      const overflow = allReviewable.length - reviewable.length;
+      const ids = JSON.stringify(allReviewable.map(i => i.id));
+
+      let listHtml;
+      if (!allReviewable.length) {
+        listHtml = `<div class="ritual-review-empty">✓ Backlog is clear — nothing to review.</div>`;
+      } else {
+        const batchBar = `
+          <div class="ritual-batch-bar">
+            <span style="font-size:11px;color:var(--text-secondary)">${allReviewable.length} item${allReviewable.length > 1 ? 's' : ''} to decide</span>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn btn--sm btn--primary" style="padding:4px 12px;min-height:32px;font-size:11px" onclick="ritualBatchRecommit(${ids})">Recommit All</button>
+              <button class="btn btn--sm" style="padding:4px 12px;min-height:32px;font-size:11px" onclick="ritualBatchArchive(${ids})">Archive All</button>
+            </div>
+          </div>`;
+        const itemsHtml = reviewable.map(item => `
+          <div class="ritual-review-item" id="ritual-ri-${item.id}">
+            <div class="ritual-review-item__body">
+              <div class="ritual-review-item__title">${esc(item.content?.title || item.content?.text || 'Untitled')}</div>
+              <div class="ritual-review-item__actions">
+                <button class="btn btn--sm btn--primary" onclick="ritualRecommit('${item.id}')">Recommit</button>
+                <button class="btn btn--sm" onclick="ritualArchive('${item.id}')">Archive</button>
+                <button class="btn btn--sm" style="color:var(--danger)" onclick="ritualDelete('${item.id}')">Delete</button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+        const overflowNote = overflow > 0
+          ? `<div style="padding:10px 14px;font-size:11px;color:var(--text-muted);text-align:center;border:var(--pp-border);border-top:none">+${overflow} more · use Recommit All or Archive All to clear</div>`
+          : '';
+        listHtml = batchBar + itemsHtml + overflowNote;
+      }
+
+      body.innerHTML = `
+        ${progressHtml}
+        <div class="ritual-step__label">${step.label}</div>
+        <div class="ritual-step__hint">${step.hint}</div>
+        <div class="ritual-review-list">${listHtml}</div>
+        ${navHtml}
+      `;
+      refreshIcons();
+  } else {
+    body.innerHTML = `
+      ${progressHtml}
+      <div class="ritual-step__label">${step.label}</div>
+      <div class="ritual-step__question">${step.question}</div>
+      <div class="ritual-step__hint">${step.hint}</div>
+      <textarea class="input" id="ritual-answer" rows="${step.rows}" placeholder="${step.placeholder}">${esc(ritualState.answers[step.id] || '')}</textarea>
+      ${navHtml}
+    `;
+    setTimeout(() => $('ritual-answer')?.focus(), 80);
+  }
 }
 
 function ritualSaveCurrent() {
   const step = RITUAL_STEPS[ritualState.step];
+  if (step.type === 'stale_review') return; // stale actions are applied immediately
   const val = $('ritual-answer')?.value || '';
   ritualState.answers[step.id] = val;
+  saveRitualState();
+}
+
+// Inline ritual stale actions — apply immediately and remove card from ritual list
+async function ritualRecommit(id) {
+  const el = document.getElementById(`ritual-ri-${id}`);
+  if (el) { el.style.opacity = '0.4'; el.style.pointerEvents = 'none'; }
+  await recommitItem(id);
+  if (el) el.remove();
+}
+
+async function ritualArchive(id) {
+  const el = document.getElementById(`ritual-ri-${id}`);
+  if (el) { el.style.opacity = '0.4'; el.style.pointerEvents = 'none'; }
+  await archiveItem(id);
+  if (el) el.remove();
+}
+
+async function ritualDelete(id) {
+  // No confirm dialog inside ritual — the ritual context is the explicit review
+  const idx = items.findIndex(i => i.id === id);
+  if (idx < 0) return;
+  const el = document.getElementById(`ritual-ri-${id}`);
+  if (el) { el.style.opacity = '0.4'; el.style.pointerEvents = 'none'; }
+  try {
+    await dbDelete(id);
+    saveLocal();
+    if (el) el.remove();
+    showToast('Deleted');
+  } catch (e) {
+    if (el) { el.style.opacity = '1'; el.style.pointerEvents = ''; }
+    showToast('Delete failed');
+  }
+}
+
+async function ritualBatchRecommit(ids) {
+  if (!ids.length) return;
+  await recommitAll(ids);
+  // Remove all processed cards from the ritual DOM
+  ids.forEach(id => {
+    const el = document.getElementById(`ritual-ri-${id}`);
+    if (el) el.remove();
+  });
+  // Show clear state if nothing left
+  const list = document.querySelector('.ritual-review-list');
+  const remaining = list?.querySelectorAll('.ritual-review-item').length || 0;
+  if (remaining === 0 && list) {
+    list.innerHTML = `<div class="ritual-review-empty">✓ All recommitted — backlog cleared.</div>`;
+  }
+}
+
+async function ritualBatchArchive(ids) {
+  if (!ids.length) return;
+  // Delegate to shared archiveAll — gives undo support and consistent state management
+  await archiveAll(ids);
+  // After archiving, clean up ritual DOM cards for archived items
+  ids.forEach(id => {
+    const idx = items.findIndex(i => i.id === id);
+    if (idx < 0 || items[idx].status === 'archived') {
+      const el = document.getElementById(`ritual-ri-${id}`);
+      if (el) el.remove();
+    }
+  });
+  const list = document.querySelector('.ritual-review-list');
+  if (list && !list.querySelector('.ritual-review-item')) {
+    list.innerHTML = `<div class="ritual-review-empty">✓ Archived — backlog cleared.</div>`;
+  }
 }
 
 function ritualNext() {
   ritualSaveCurrent();
   if (ritualState.step < RITUAL_STEPS.length - 1) {
     ritualState.step++;
+    saveRitualState();
     renderRitual();
   }
 }
@@ -2651,6 +3355,7 @@ function ritualPrev() {
   ritualSaveCurrent();
   if (ritualState.step > 0) {
     ritualState.step--;
+    saveRitualState();
     renderRitual();
   }
 }
@@ -2660,6 +3365,13 @@ async function ritualFinish() {
   if (!requireSession() && !safeMode) return;
 
   const a = ritualState.answers;
+  // Count how many stale/dormant items remain after ritual cleanup
+  const remainingStale = items.filter(i =>
+    i.status === 'active' && (isStale(i) || isDormant(i)) &&
+    !['routine', 'reflection'].includes(i.type) &&
+    i.node_type !== 'flow'
+  ).length;
+
   const item = {
     type: 'reflection',
     status: 'active',
@@ -2672,7 +3384,8 @@ async function ritualFinish() {
       title: `Reflection — ${todayStr()}`,
       review_today: a.review || '',
       gratitude: a.gratitude || '',
-      tomorrow_top3: a.tomorrow || ''
+      tomorrow_top3: a.tomorrow || '',
+      stale_cleared: remainingStale === 0 ? 'Backlog cleared' : `${remainingStale} items still pending review`
     },
     created_at: new Date().toISOString()
   };
@@ -2685,10 +3398,12 @@ async function ritualFinish() {
       render();
     }
     ritualState.complete = true;
+    clearRitualState(); // completed — no need to persist anymore
     renderRitual();
   } catch (e) {
     showToast('Failed to save — but that\'s okay');
     ritualState.complete = true;
+    clearRitualState();
     renderRitual();
   }
 }
@@ -2713,9 +3428,51 @@ document.addEventListener('keydown', e => {
 });
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   INIT
+   ACTIONABLE SUMMARY HELPERS
    ═══════════════════════════════════════════════════════════════════════════ */
-bootstrap();
+function expandReviewSection(bodyId) {
+  const body = document.getElementById(bodyId);
+  if (!body) return;
+  body.style.display = '';
+  const toggle = body.previousElementSibling;
+  if (toggle) {
+    const arrow = toggle.querySelector('.review-section__arrow');
+    if (arrow) arrow.textContent = '▲';
+  }
+  setTimeout(() => body.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+}
+
+function scrollToStaleItems() {
+  const staleEl = document.querySelector('.stream-item--stale');
+  if (staleEl) staleEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  else document.getElementById('work-stream')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function scrollToFlows() {
+  const flowsLabel = document.querySelector('#work-stream .section-label');
+  if (flowsLabel) flowsLabel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  else document.getElementById('work-stream')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SERVICE WORKER REGISTRATION
+   ═══════════════════════════════════════════════════════════════════════════ */
+if ('serviceWorker' in navigator) {
+  // Skip on known preview/sandbox origins that cannot serve sw.js
+  const isPreview = ['claudeusercontent.com', 'stackblitz.io', 'codesandbox.io']
+    .some(h => location.hostname.includes(h));
+  if (!isPreview) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').then(() => {
+        // SW registered — offline shell active
+      }).catch(() => {
+        // SW unavailable — app works normally without it
+      });
+    });
+  }
+}
+
+
 
 // Initialize Lucide icons when DOM is ready
 document.addEventListener('DOMContentLoaded', refreshIcons);
